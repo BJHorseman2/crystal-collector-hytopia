@@ -455,7 +455,7 @@
         }
 
         #gameOver.show {
-            display: block;
+            display: block !important;
             animation: bounceIn 0.5s ease-out;
         }
 
@@ -717,12 +717,16 @@
                     this.element.classList.add(this.movePattern);
                 } else {
                     this.moveInterval = setInterval(() => this.move(), 30);
+                    // Store interval reference on element for cleanup
+                    this.element._moveInterval = this.moveInterval;
                 }
 
                 // Auto-remove after time
-                setTimeout(() => {
+                this.removeTimeout = setTimeout(() => {
                     if (!this.clicked) this.remove();
                 }, 8000);
+                // Store timeout reference for cleanup
+                this.element._removeTimeout = this.removeTimeout;
             }
 
             move() {
@@ -829,7 +833,14 @@
             }
 
             remove() {
-                if (this.moveInterval) clearInterval(this.moveInterval);
+                if (this.moveInterval) {
+                    clearInterval(this.moveInterval);
+                    this.moveInterval = null;
+                }
+                if (this.removeTimeout) {
+                    clearTimeout(this.removeTimeout);
+                    this.removeTimeout = null;
+                }
                 if (this.element.parentElement) {
                     this.element.remove();
                 }
@@ -959,23 +970,48 @@
         }
 
         function startGame() {
-            if (gameTimer) clearInterval(gameTimer);
-            if (spawnInterval) clearInterval(spawnInterval);
+            // Clear any existing intervals and timeouts
+            if (gameTimer) {
+                clearInterval(gameTimer);
+                gameTimer = null;
+            }
+            if (spawnInterval) {
+                clearInterval(spawnInterval);
+                spawnInterval = null;
+            }
 
+            // Stop any existing characters' movement
+            const canvas = document.getElementById('gameCanvas');
+            const existingChars = canvas.querySelectorAll('.meme-character');
+            existingChars.forEach(char => {
+                // Clear any associated intervals and timeouts
+                if (char._moveInterval) {
+                    clearInterval(char._moveInterval);
+                }
+                if (char._removeTimeout) {
+                    clearTimeout(char._removeTimeout);
+                }
+            });
+
+            // Reset all game variables
             score = 0;
             timeLeft = 60;
             coinsCollected = 0;
             combo = 0;
             maxCombo = 0;
+            lastCollectTime = 0;
             gameActive = true;
             isPaused = false;
             moonMode = false;
             chaosMode = false;
             collectionStats = { vibes: 0, rekt: 0, penguin: 0, nft: 0, moon: 0 };
 
-            const canvas = document.getElementById('gameCanvas');
-            canvas.querySelectorAll('.meme-character, .trail').forEach(c => c.remove());
+            // Clear the canvas completely
+            canvas.querySelectorAll('.meme-character, .trail, .points-popup').forEach(c => c.remove());
+
+            // Hide overlays
             document.getElementById('gameOver').classList.remove('show');
+            document.getElementById('gameOver').style.display = 'none';
             document.getElementById('powerUp').classList.remove('active');
             document.getElementById('chaosMode').classList.remove('active');
 
