@@ -970,6 +970,21 @@
         }
 
         function startGame() {
+            // Prevent multiple simultaneous calls
+            if (window.gameStarting) return;
+            window.gameStarting = true;
+
+            // Force stop any existing game first
+            if (gameActive) {
+                gameActive = false;
+            }
+
+            // Clear ALL intervals and timeouts (global cleanup)
+            const highestTimeoutId = setTimeout(() => {}, 0);
+            for (let i = 0; i < highestTimeoutId; i++) {
+                clearTimeout(i);
+            }
+
             // Clear any existing intervals and timeouts
             if (gameTimer) {
                 clearInterval(gameTimer);
@@ -1000,7 +1015,6 @@
             combo = 0;
             maxCombo = 0;
             lastCollectTime = 0;
-            gameActive = true;
             isPaused = false;
             moonMode = false;
             chaosMode = false;
@@ -1017,41 +1031,57 @@
 
             updateStats();
 
-            spawnInterval = setInterval(spawnCharacter, 800);
+            // Now safe to start the game
+            gameActive = true;
 
-            gameTimer = setInterval(() => {
-                if (!isPaused) {
-                    timeLeft--;
-                    updateStats();
+            // Start spawning with a small delay to ensure everything is ready
+            setTimeout(() => {
+                if (gameActive) {
+                    spawnInterval = setInterval(spawnCharacter, 800);
 
-                    if (timeLeft <= 0) {
-                        endGame();
-                    }
+                    gameTimer = setInterval(() => {
+                        if (!isPaused && gameActive) {
+                            timeLeft--;
+                            updateStats();
 
-                    // Increase spawn rate
-                    if (timeLeft === 45) {
-                        clearInterval(spawnInterval);
-                        spawnInterval = setInterval(spawnCharacter, 600);
-                    } else if (timeLeft === 30) {
-                        clearInterval(spawnInterval);
-                        spawnInterval = setInterval(spawnCharacter, 400);
-                    } else if (timeLeft === 15) {
-                        clearInterval(spawnInterval);
-                        spawnInterval = setInterval(spawnCharacter, 300);
+                            if (timeLeft <= 0) {
+                                endGame();
+                            }
+
+                            // Increase spawn rate
+                            if (timeLeft === 45 && gameActive) {
+                                clearInterval(spawnInterval);
+                                spawnInterval = setInterval(spawnCharacter, 600);
+                            } else if (timeLeft === 30 && gameActive) {
+                                clearInterval(spawnInterval);
+                                spawnInterval = setInterval(spawnCharacter, 400);
+                            } else if (timeLeft === 15 && gameActive) {
+                                clearInterval(spawnInterval);
+                                spawnInterval = setInterval(spawnCharacter, 300);
+                            }
+                        }
+                    }, 1000);
+
+                    // Initial spawns
+                    for (let i = 0; i < 5; i++) {
+                        setTimeout(() => {
+                            if (gameActive) spawnCharacter();
+                        }, i * 200);
                     }
                 }
-            }, 1000);
 
-            // Initial spawns
-            for (let i = 0; i < 5; i++) {
-                setTimeout(spawnCharacter, i * 200);
-            }
+                // Reset the starting flag
+                window.gameStarting = false;
+            }, 100);
         }
 
         function endGame() {
             gameActive = false;
+            window.gameStarting = false; // Reset flag in case of any issues
             clearInterval(gameTimer);
             clearInterval(spawnInterval);
+            gameTimer = null;
+            spawnInterval = null;
 
             if (score > highScore) {
                 highScore = score;
