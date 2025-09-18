@@ -595,9 +595,9 @@
         </div>
 
         <div id="gameControls">
-            <button id="startBtn" ontouchstart="startGame()" onclick="startGame()">🎮 Start</button>
-            <button id="pauseBtn" ontouchstart="togglePause()" onclick="togglePause()">⏸️ Pause</button>
-            <button id="chaosBtn" ontouchstart="activateChaosMode()" onclick="activateChaosMode()">🌈 CHAOS!</button>
+            <button id="startBtn">🎮 Start</button>
+            <button id="pauseBtn">⏸️ Pause</button>
+            <button id="chaosBtn">🌈 CHAOS!</button>
         </div>
 
         <div class="mobile-controls">
@@ -1092,6 +1092,9 @@
         }
 
         function startGame() {
+            // Debug for mobile
+            console.log('Start game called');
+
             if (window.gameStarting) return;
             window.gameStarting = true;
 
@@ -1215,9 +1218,38 @@
         }
 
         // Initialize
-        window.onload = () => {
+        function initGame() {
             document.getElementById('highScore').textContent = highScore;
             setupMobileControls();
+
+            // Add event listeners to buttons for mobile
+            const startBtn = document.getElementById('startBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+            const chaosBtn = document.getElementById('chaosBtn');
+
+            if (startBtn) {
+                startBtn.addEventListener('click', startGame);
+                startBtn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    startGame();
+                });
+            }
+
+            if (pauseBtn) {
+                pauseBtn.addEventListener('click', togglePause);
+                pauseBtn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    togglePause();
+                });
+            }
+
+            if (chaosBtn) {
+                chaosBtn.addEventListener('click', activateChaosMode);
+                chaosBtn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    activateChaosMode();
+                });
+            }
 
             // Prevent zoom on double tap for mobile
             let lastTouchEnd = 0;
@@ -1235,7 +1267,17 @@
                     e.preventDefault();
                 }
             }, { passive: false });
-        };
+        }
+
+        // Multiple ways to ensure initialization
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initGame);
+        } else {
+            initGame();
+        }
+
+        window.addEventListener('load', initGame);
+        setTimeout(initGame, 1000); // Fallback
     </script>
 </body>
 </html>
