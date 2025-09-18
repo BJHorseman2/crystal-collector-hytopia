@@ -216,6 +216,29 @@
             90% { transform: translateX(-2px); }
         }
 
+        .superShake {
+            animation: superShake 0.5s ease-out;
+        }
+
+        @keyframes superShake {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            10% { transform: translate(-10px, -10px) rotate(-2deg); }
+            20% { transform: translate(10px, 10px) rotate(2deg); }
+            30% { transform: translate(-10px, 10px) rotate(-2deg); }
+            40% { transform: translate(10px, -10px) rotate(2deg); }
+            50% { transform: translate(-15px, 0) rotate(-3deg); }
+            60% { transform: translate(15px, 0) rotate(3deg); }
+            70% { transform: translate(0, -15px) rotate(-2deg); }
+            80% { transform: translate(0, 15px) rotate(2deg); }
+            90% { transform: translate(-5px, -5px) rotate(-1deg); }
+        }
+
+        @keyframes ruggedShake {
+            0% { transform: translateX(-50%) scale(0) rotate(-180deg); }
+            50% { transform: translateX(-50%) scale(1.5) rotate(10deg); }
+            100% { transform: translateX(-50%) scale(1) rotate(0deg); }
+        }
+
         .meme-character {
             position: absolute;
             cursor: pointer;
@@ -248,6 +271,17 @@
 
         .meme-character.nft {
             background-image: url('IMG_0837.PNG');
+        }
+
+        .meme-character.rug {
+            background: linear-gradient(135deg, #8B4513 0%, #D2691E 50%, #8B4513 100%);
+            border: 3px solid #ff0000;
+            animation: rugPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes rugPulse {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(5deg); }
         }
 
         .meme-character.moon {
@@ -631,10 +665,11 @@
         const movementPatterns = ['bounce-move', 'spiral-move', 'zigzag-move', 'orbit-move', 'teleport-move'];
 
         const characterTypes = [
-            { name: 'VIBES', value: 25, className: 'vibes', rarity: 0.25, emoji: '😎' },
-            { name: 'REKT', value: -15, className: 'rekt', rarity: 0.2, emoji: '👻' },
-            { name: 'PENGUIN', value: 50, className: 'penguin', rarity: 0.2, emoji: '🐧' },
+            { name: 'VIBES', value: 25, className: 'vibes', rarity: 0.2, emoji: '😎' },
+            { name: 'REKT', value: -15, className: 'rekt', rarity: 0.15, emoji: '👻' },
+            { name: 'PENGUIN', value: 50, className: 'penguin', rarity: 0.15, emoji: '🐧' },
             { name: 'NFT', value: 75, className: 'nft', rarity: 0.15, emoji: '🎨' },
+            { name: 'RUG', value: -50, className: 'rug', rarity: 0.15, emoji: '🧹', isRug: true },
             { name: 'MOON', value: 100, className: 'moon', rarity: 0.1, emoji: '🌙', special: true },
             { name: 'CHAOS', value: 200, className: 'chaos', rarity: 0.1, emoji: '🌈', special: true }
         ];
@@ -708,7 +743,7 @@
                 this.element.style.left = this.x + 'px';
                 this.element.style.top = this.y + 'px';
 
-                if (this.type.className === 'moon' || this.type.className === 'chaos') {
+                if (this.type.className === 'moon' || this.type.className === 'chaos' || this.type.className === 'rug') {
                     this.element.textContent = this.type.emoji;
                 }
 
@@ -794,7 +829,12 @@
 
                 score += value;
 
-                if (value > 0) {
+                if (this.type.isRug) {
+                    // Handle rug pull
+                    collectionStats.rugged = (collectionStats.rugged || 0) + 1;
+                    combo = 0;
+                    showRuggedMessage();
+                } else if (value > 0) {
                     if (this.type.name === 'VIBES') collectionStats.vibes++;
                     else if (this.type.name === 'PENGUIN') collectionStats.penguin++;
                     else if (this.type.name === 'NFT') collectionStats.nft++;
@@ -890,6 +930,38 @@
                 text.style.fontSize = '1em';
                 text.style.color = '#ffffff';
             }
+        }
+
+        function showRuggedMessage() {
+            const ruggedMsg = document.createElement('div');
+            ruggedMsg.style.cssText = `
+                position: absolute;
+                top: 30%;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: clamp(2.5em, 6vw, 4em);
+                font-weight: bold;
+                color: #ff0000;
+                text-shadow: 3px 3px 0 #000,
+                            -3px -3px 0 #000,
+                            3px -3px 0 #000,
+                            -3px 3px 0 #000;
+                z-index: 100;
+                animation: ruggedShake 0.5s ease-out;
+            `;
+            ruggedMsg.textContent = 'YOU GOT RUGGED!!';
+
+            const canvas = document.getElementById('gameCanvas');
+            canvas.appendChild(ruggedMsg);
+
+            // Shake screen more violently for rug pull
+            const container = document.getElementById('gameContainer');
+            container.classList.add('superShake');
+
+            setTimeout(() => {
+                ruggedMsg.remove();
+                container.classList.remove('superShake');
+            }, 1500);
         }
 
         function createSuperExplosion(x, y, emoji, value) {
