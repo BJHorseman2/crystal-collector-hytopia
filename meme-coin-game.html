@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meme Coin Collector - To The Moon! 🚀</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff05" d="M0,224L48,213.3C96,203,192,181,288,186.7C384,192,480,224,576,218.7C672,213,768,171,864,165.3C960,160,1056,192,1152,197.3C1248,203,1344,181,1392,170.7L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
+            background-size: cover;
+            opacity: 0.5;
+        }
+
+        #gameContainer {
+            background: rgba(15, 15, 30, 0.95);
+            border: 3px solid #00ff88;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 0 50px rgba(0, 255, 136, 0.5), 0 20px 60px rgba(0, 0, 0, 0.7);
+            max-width: 900px;
+            width: 100%;
+            z-index: 1;
+            position: relative;
+        }
+
+        #gameHeader {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        h1 {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 3em;
+            background: linear-gradient(45deg, #00ff88, #00ffff, #ff00ff);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.5)); }
+            to { filter: drop-shadow(0 0 20px rgba(0, 255, 255, 0.8)); }
+        }
+
+        .tagline {
+            color: #00ff88;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        #gameStats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .stat {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 255, 255, 0.1));
+            border: 2px solid #00ff88;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            text-align: center;
+            flex: 1;
+            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        #gameCanvas {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            background: radial-gradient(ellipse at center, rgba(0, 255, 136, 0.1), transparent),
+                        linear-gradient(to bottom, #0a0a0f 0%, #1a1a2e 100%);
+            border: 2px solid #00ff88;
+            border-radius: 15px;
+            overflow: hidden;
+            cursor: crosshair;
+            box-shadow: inset 0 0 50px rgba(0, 255, 136, 0.1);
+        }
+
+        .stars {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(2px 2px at 20% 30%, white, transparent),
+                              radial-gradient(2px 2px at 60% 70%, white, transparent),
+                              radial-gradient(1px 1px at 50% 50%, white, transparent);
+            background-size: 200px 200px;
+            animation: stars 100s linear infinite;
+        }
+
+        @keyframes stars {
+            from { transform: translateY(0); }
+            to { transform: translateY(-200px); }
+        }
+
+        .coin {
+            position: absolute;
+            font-size: 40px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            animation: float 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 10px currentColor);
+            user-select: none;
+        }
+
+        .coin:hover {
+            transform: scale(1.3) rotate(15deg);
+        }
+
+        .coin.doge {
+            animation: float 2.5s ease-in-out infinite;
+        }
+
+        .coin.pepe {
+            animation: float 2s ease-in-out infinite, spin 4s linear infinite;
+        }
+
+        .coin.shiba {
+            animation: float 2.8s ease-in-out infinite;
+        }
+
+        .coin.moon {
+            animation: float 1.5s ease-in-out infinite, pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(5deg); }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { filter: drop-shadow(0 0 10px gold); }
+            50% { filter: drop-shadow(0 0 30px gold); }
+        }
+
+        .scorePopup {
+            position: absolute;
+            color: #00ff88;
+            font-weight: bold;
+            font-size: 2em;
+            pointer-events: none;
+            z-index: 10;
+            animation: scoreFloat 1s ease-out forwards;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.8);
+            font-family: 'Bebas Neue', cursive;
+        }
+
+        @keyframes scoreFloat {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-80px) scale(0.5);
+                opacity: 0;
+            }
+        }
+
+        #gameControls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #00ff88, #00ccff);
+            color: #0a0a0f;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.6);
+            background: linear-gradient(135deg, #00ffaa, #00eeff);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        #powerUp {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, #ff00ff, #ffff00);
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: none;
+            z-index: 15;
+            animation: powerPulse 0.5s ease-in-out infinite;
+        }
+
+        #powerUp.active {
+            display: block;
+        }
+
+        @keyframes powerPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 0, 255, 0.8); }
+            50% { transform: scale(1.1); box-shadow: 0 0 40px rgba(255, 255, 0, 1); }
+        }
+
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, rgba(15, 15, 30, 0.98), rgba(0, 0, 0, 0.95));
+            border: 3px solid #00ff88;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            display: none;
+            z-index: 20;
+            box-shadow: 0 0 50px rgba(0, 255, 136, 0.5);
+        }
+
+        #gameOver h2 {
+            color: #00ff88;
+            font-family: 'Bebas Neue', cursive;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        #gameOver p {
+            color: white;
+            font-size: 1.2em;
+            margin: 10px 0;
+        }
+
+        #gameOver.show {
+            display: block;
+            animation: bounceIn 0.5s ease-out;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            70% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .rocket {
+            position: fixed;
+            font-size: 30px;
+            animation: rocketFly 3s ease-out forwards;
+            z-index: 100;
+        }
+
+        @keyframes rocketFly {
+            from {
+                transform: translateX(-50px) translateY(100vh) rotate(-45deg);
+            }
+            to {
+                transform: translateX(100vw) translateY(-100vh) rotate(-45deg);
+            }
+        }
+
+        .moon-indicator {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #00ff88;
+            font-size: 1.2em;
+            text-transform: uppercase;
+            animation: pulse 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="gameHeader">
+            <h1>🚀 Meme Coin Collector 🚀</h1>
+            <p class="tagline">Diamond Hands Only! 💎🙌</p>
+        </div>
+
+        <div id="gameStats">
+            <div class="stat">💰 Score: <span id="score">0</span></div>
+            <div class="stat">⏱️ Time: <span id="timer">60</span>s</div>
+            <div class="stat">🪙 Coins: <span id="coinCount">0</span></div>
+            <div class="stat">🏆 High: <span id="highScore">0</span></div>
+        </div>
+
+        <div id="gameCanvas">
+            <div class="stars"></div>
+            <div class="moon-indicator">🌙 MOON MISSION</div>
+            <div id="powerUp">🚀 MOON MODE! 2X</div>
+            <div id="gameOver">
+                <h2>📉 Market Closed! 📈</h2>
+                <p>💰 Final Portfolio: <span id="finalScore">0</span></p>
+                <p>🪙 Coins HODLed: <span id="finalCoins">0</span></p>
+                <button onclick="startGame()">🚀 Go Again!</button>
+            </div>
+        </div>
+
+        <div id="gameControls">
+            <button onclick="startGame()">🎮 Start Mining</button>
+            <button onclick="togglePause()">⏸️ HODL</button>
+            <button onclick="resetHighScore()">💸 REKT Score</button>
+        </div>
+    </div>
+
+    <script>
+        let score = 0;
+        let timeLeft = 60;
+        let coinsCollected = 0;
+        let gameActive = false;
+        let isPaused = false;
+        let moonMode = false;
+        let gameTimer;
+        let spawnInterval;
+        let highScore = localStorage.getItem('memeHighScore') || 0;
+
+        // Update high score display
+        document.getElementById('highScore').textContent = highScore;
+
+        // Meme coins with emojis and values
+        const memeCoins = [
+            { emoji: '🐕', name: 'DOGE', value: 10, className: 'doge', rarity: 0.4 },
+            { emoji: '🐸', name: 'PEPE', value: 25, className: 'pepe', rarity: 0.25 },
+            { emoji: '🦴', name: 'SHIB', value: 15, className: 'shiba', rarity: 0.3 },
+            { emoji: '🚀', name: 'MOON', value: 100, className: 'moon', rarity: 0.03 },
+            { emoji: '💎', name: 'DIAMOND', value: 50, className: 'diamond', rarity: 0.1 },
+            { emoji: '🦍', name: 'APE', value: 30, className: 'ape', rarity: 0.15 },
+            { emoji: '🌕', name: 'SAFEMOON', value: 20, className: 'safemoon', rarity: 0.2 },
+            { emoji: '🔥', name: 'BURN', value: 35, className: 'burn', rarity: 0.12 }
+        ];
+
+        class MemeCoin {
+            constructor(coinData) {
+                this.emoji = coinData.emoji;
+                this.name = coinData.name;
+                this.value = coinData.value;
+                this.className = coinData.className;
+                this.element = null;
+            }
+
+            spawn() {
+                const canvas = document.getElementById('gameCanvas');
+                const coin = document.createElement('div');
+                coin.className = `coin ${this.className}`;
+                coin.textContent = this.emoji;
+
+                // Random position
+                const maxX = canvas.offsetWidth - 50;
+                const maxY = canvas.offsetHeight - 50;
+                coin.style.left = Math.random() * maxX + 'px';
+                coin.style.top = Math.random() * maxY + 'px';
+
+                // Random animation delay
+                coin.style.animationDelay = Math.random() * 2 + 's';
+
+                coin.onclick = () => this.collect(coin);
+
+                canvas.appendChild(coin);
+                this.element = coin;
+
+                // Auto-remove after random time (3-7 seconds)
+                setTimeout(() => {
+                    if (coin.parentNode) {
+                        coin.style.opacity = '0';
+                        setTimeout(() => coin.remove(), 300);
+                    }
+                }, 3000 + Math.random() * 4000);
+            }
+
+            collect(coin) {
+                if (!gameActive || isPaused) return;
+
+                const rect = coin.getBoundingClientRect();
+                const points = moonMode ? this.value * 2 : this.value;
+
+                // Update score
+                score += points;
+                coinsCollected++;
+                updateStats();
+
+                // Create score popup
+                createScorePopup(rect.left, rect.top, `+${points} ${this.name}!`);
+
+                // Play sound effect
+                playCollectSound(this.value);
+
+                // Remove coin
+                coin.remove();
+
+                // Special effects for rare coins
+                if (this.value >= 50) {
+                    createRocket();
+                }
+
+                // Chance for moon mode
+                if (Math.random() < 0.08) {
+                    activateMoonMode();
+                }
+            }
+        }
+
+        function createScorePopup(x, y, text) {
+            const popup = document.createElement('div');
+            popup.className = 'scorePopup';
+            popup.textContent = text;
+            popup.style.left = x + 'px';
+            popup.style.top = y + 'px';
+            document.getElementById('gameCanvas').appendChild(popup);
+
+            setTimeout(() => popup.remove(), 1000);
+        }
+
+        function createRocket() {
+            const rocket = document.createElement('div');
+            rocket.className = 'rocket';
+            rocket.textContent = '🚀';
+            rocket.style.left = Math.random() * window.innerWidth + 'px';
+            document.body.appendChild(rocket);
+
+            setTimeout(() => rocket.remove(), 3000);
+        }
+
+        function playCollectSound(value) {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            // Different frequencies for different coin values
+            oscillator.frequency.value = 300 + value * 5;
+            gainNode.gain.value = 0.1;
+
+            oscillator.start();
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+            oscillator.stop(audioContext.currentTime + 0.2);
+        }
+
+        function spawnCoin() {
+            if (!gameActive || isPaused) return;
+
+            // Weighted random selection
+            const rand = Math.random();
+            let accumulator = 0;
+            let selectedCoin = memeCoins[0];
+
+            for (const coin of memeCoins) {
+                accumulator += coin.rarity;
+                if (rand < accumulator) {
+                    selectedCoin = coin;
+                    break;
+                }
+            }
+
+            const memeCoin = new MemeCoin(selectedCoin);
+            memeCoin.spawn();
+        }
+
+        function updateStats() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('timer').textContent = timeLeft;
+            document.getElementById('coinCount').textContent = coinsCollected;
+        }
+
+        function activateMoonMode() {
+            if (moonMode) return;
+
+            moonMode = true;
+            document.getElementById('powerUp').classList.add('active');
+
+            // Create multiple rockets
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => createRocket(), i * 300);
+            }
+
+            setTimeout(() => {
+                moonMode = false;
+                document.getElementById('powerUp').classList.remove('active');
+            }, 5000);
+        }
+
+        function startGame() {
+            // Reset game state
+            score = 0;
+            timeLeft = 60;
+            coinsCollected = 0;
+            gameActive = true;
+            isPaused = false;
+            moonMode = false;
+
+            // Clear canvas
+            const canvas = document.getElementById('gameCanvas');
+            canvas.querySelectorAll('.coin').forEach(c => c.remove());
+            document.getElementById('gameOver').classList.remove('show');
+
+            updateStats();
+
+            // Start spawning coins
+            spawnInterval = setInterval(spawnCoin, 700);
+
+            // Start game timer
+            gameTimer = setInterval(() => {
+                if (!isPaused) {
+                    timeLeft--;
+                    updateStats();
+
+                    if (timeLeft <= 0) {
+                        endGame();
+                    }
+
+                    // Increase spawn rate as time goes on
+                    if (timeLeft === 30) {
+                        clearInterval(spawnInterval);
+                        spawnInterval = setInterval(spawnCoin, 500);
+                    }
+                }
+            }, 1000);
+
+            // Spawn initial coins
+            for (let i = 0; i < 5; i++) {
+                setTimeout(spawnCoin, i * 200);
+            }
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(gameTimer);
+            clearInterval(spawnInterval);
+
+            // Update high score
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('memeHighScore', highScore);
+                document.getElementById('highScore').textContent = highScore;
+
+                // Celebration for new high score
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => createRocket(), i * 200);
+                }
+            }
+
+            // Show game over screen
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('finalCoins').textContent = coinsCollected;
+            document.getElementById('gameOver').classList.add('show');
+        }
+
+        function togglePause() {
+            if (!gameActive) return;
+            isPaused = !isPaused;
+        }
+
+        function resetHighScore() {
+            highScore = 0;
+            localStorage.setItem('memeHighScore', 0);
+            document.getElementById('highScore').textContent = 0;
+        }
+
+        // Start game automatically
+        window.onload = () => {
+            startGame();
+        };
+    </script>
+</body>
+</html>

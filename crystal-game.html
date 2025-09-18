@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crystal Collector - Browser Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        #gameContainer {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+        }
+
+        #gameHeader {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #764ba2;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #gameStats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .stat {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            text-align: center;
+            flex: 1;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        #gameCanvas {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 100%);
+            border-radius: 15px;
+            overflow: hidden;
+            cursor: crosshair;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .crystal {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .crystal:hover {
+            transform: scale(1.2) rotate(10deg);
+        }
+
+        .crystal.diamond {
+            background: linear-gradient(135deg, #00bfff 0%, #1e90ff 100%);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            box-shadow: 0 0 20px rgba(30, 144, 255, 0.6);
+        }
+
+        .crystal.gold {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+            animation: float 2s ease-in-out infinite, sparkle 1s ease-in-out infinite;
+        }
+
+        .crystal.ruby {
+            background: linear-gradient(135deg, #DC143C 0%, #8B0000 100%);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            box-shadow: 0 0 25px rgba(220, 20, 60, 0.7);
+            animation: float 2.5s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .scorePopup {
+            position: absolute;
+            color: white;
+            font-weight: bold;
+            font-size: 1.5em;
+            pointer-events: none;
+            z-index: 10;
+            animation: scoreFloat 1s ease-out forwards;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        @keyframes scoreFloat {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-50px) scale(0.5);
+                opacity: 0;
+            }
+        }
+
+        #gameControls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        #powerUp {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        #powerUp.active {
+            display: block;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+            z-index: 20;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        #gameOver.show {
+            display: block;
+            animation: bounceIn 0.5s ease-out;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            70% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: gold;
+            pointer-events: none;
+            animation: particle 0.5s ease-out forwards;
+        }
+
+        @keyframes particle {
+            to {
+                transform: translate(var(--x), var(--y)) scale(0);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="gameHeader">
+            <h1>💎 Crystal Collector 💎</h1>
+            <p>Click crystals to collect them! Gold = 50pts, Ruby = 25pts, Diamond = 10pts</p>
+        </div>
+
+        <div id="gameStats">
+            <div class="stat">Score: <span id="score">0</span></div>
+            <div class="stat">Time: <span id="timer">60</span>s</div>
+            <div class="stat">Crystals: <span id="crystalCount">0</span></div>
+            <div class="stat">High Score: <span id="highScore">0</span></div>
+        </div>
+
+        <div id="gameCanvas">
+            <div id="powerUp">⚡ DOUBLE POINTS!</div>
+            <div id="gameOver">
+                <h2>Game Over!</h2>
+                <p>Final Score: <span id="finalScore">0</span></p>
+                <p>Crystals Collected: <span id="finalCrystals">0</span></p>
+                <button onclick="startGame()">Play Again</button>
+            </div>
+        </div>
+
+        <div id="gameControls">
+            <button onclick="startGame()">Start Game</button>
+            <button onclick="togglePause()">Pause</button>
+            <button onclick="resetHighScore()">Reset High Score</button>
+        </div>
+    </div>
+
+    <script>
+        let score = 0;
+        let timeLeft = 60;
+        let crystalsCollected = 0;
+        let gameActive = false;
+        let isPaused = false;
+        let doublePoints = false;
+        let gameTimer;
+        let spawnInterval;
+        let highScore = localStorage.getItem('crystalHighScore') || 0;
+
+        // Update high score display
+        document.getElementById('highScore').textContent = highScore;
+
+        class Crystal {
+            constructor(type, value, className) {
+                this.type = type;
+                this.value = value;
+                this.className = className;
+                this.element = null;
+            }
+
+            spawn() {
+                const canvas = document.getElementById('gameCanvas');
+                const crystal = document.createElement('div');
+                crystal.className = `crystal ${this.className}`;
+
+                // Random position
+                const maxX = canvas.offsetWidth - 40;
+                const maxY = canvas.offsetHeight - 40;
+                crystal.style.left = Math.random() * maxX + 'px';
+                crystal.style.top = Math.random() * maxY + 'px';
+
+                // Random animation delay
+                crystal.style.animationDelay = Math.random() * 2 + 's';
+
+                crystal.onclick = () => this.collect(crystal);
+
+                canvas.appendChild(crystal);
+                this.element = crystal;
+
+                // Auto-remove after random time (3-8 seconds)
+                setTimeout(() => {
+                    if (crystal.parentNode) {
+                        crystal.style.opacity = '0';
+                        setTimeout(() => crystal.remove(), 300);
+                    }
+                }, 3000 + Math.random() * 5000);
+            }
+
+            collect(crystal) {
+                if (!gameActive || isPaused) return;
+
+                const rect = crystal.getBoundingClientRect();
+                const points = doublePoints ? this.value * 2 : this.value;
+
+                // Update score
+                score += points;
+                crystalsCollected++;
+                updateStats();
+
+                // Create score popup
+                createScorePopup(rect.left, rect.top, `+${points}`);
+
+                // Create particles
+                createParticles(rect.left + 20, rect.top + 20);
+
+                // Play sound effect (using Web Audio API)
+                playCollectSound(this.value);
+
+                // Remove crystal
+                crystal.remove();
+
+                // Chance for power-up
+                if (Math.random() < 0.1) {
+                    activatePowerUp();
+                }
+            }
+        }
+
+        function createScorePopup(x, y, text) {
+            const popup = document.createElement('div');
+            popup.className = 'scorePopup';
+            popup.textContent = text;
+            popup.style.left = x + 'px';
+            popup.style.top = y + 'px';
+            document.getElementById('gameCanvas').appendChild(popup);
+
+            setTimeout(() => popup.remove(), 1000);
+        }
+
+        function createParticles(x, y) {
+            for (let i = 0; i < 10; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.setProperty('--x', (Math.random() - 0.5) * 100 + 'px');
+                particle.style.setProperty('--y', (Math.random() - 0.5) * 100 + 'px');
+                document.getElementById('gameCanvas').appendChild(particle);
+
+                setTimeout(() => particle.remove(), 500);
+            }
+        }
+
+        function playCollectSound(value) {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            // Different frequencies for different crystal values
+            oscillator.frequency.value = 400 + value * 10;
+            gainNode.gain.value = 0.1;
+
+            oscillator.start();
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+            oscillator.stop(audioContext.currentTime + 0.2);
+        }
+
+        function spawnCrystal() {
+            if (!gameActive || isPaused) return;
+
+            // Random crystal type with weighted probability
+            const rand = Math.random();
+            let crystal;
+
+            if (rand < 0.6) {
+                crystal = new Crystal('diamond', 10, 'diamond');
+            } else if (rand < 0.85) {
+                crystal = new Crystal('ruby', 25, 'ruby');
+            } else {
+                crystal = new Crystal('gold', 50, 'gold');
+            }
+
+            crystal.spawn();
+        }
+
+        function updateStats() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('timer').textContent = timeLeft;
+            document.getElementById('crystalCount').textContent = crystalsCollected;
+        }
+
+        function activatePowerUp() {
+            if (doublePoints) return;
+
+            doublePoints = true;
+            document.getElementById('powerUp').classList.add('active');
+
+            setTimeout(() => {
+                doublePoints = false;
+                document.getElementById('powerUp').classList.remove('active');
+            }, 5000);
+        }
+
+        function startGame() {
+            // Reset game state
+            score = 0;
+            timeLeft = 60;
+            crystalsCollected = 0;
+            gameActive = true;
+            isPaused = false;
+            doublePoints = false;
+
+            // Clear canvas
+            const canvas = document.getElementById('gameCanvas');
+            canvas.querySelectorAll('.crystal').forEach(c => c.remove());
+            document.getElementById('gameOver').classList.remove('show');
+
+            updateStats();
+
+            // Start spawning crystals
+            spawnInterval = setInterval(spawnCrystal, 800);
+
+            // Start game timer
+            gameTimer = setInterval(() => {
+                if (!isPaused) {
+                    timeLeft--;
+                    updateStats();
+
+                    if (timeLeft <= 0) {
+                        endGame();
+                    }
+                }
+            }, 1000);
+
+            // Spawn initial crystals
+            for (let i = 0; i < 5; i++) {
+                setTimeout(spawnCrystal, i * 200);
+            }
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(gameTimer);
+            clearInterval(spawnInterval);
+
+            // Update high score
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('crystalHighScore', highScore);
+                document.getElementById('highScore').textContent = highScore;
+            }
+
+            // Show game over screen
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('finalCrystals').textContent = crystalsCollected;
+            document.getElementById('gameOver').classList.add('show');
+        }
+
+        function togglePause() {
+            if (!gameActive) return;
+            isPaused = !isPaused;
+        }
+
+        function resetHighScore() {
+            highScore = 0;
+            localStorage.setItem('crystalHighScore', 0);
+            document.getElementById('highScore').textContent = 0;
+        }
+
+        // Start game automatically
+        window.onload = () => {
+            startGame();
+        };
+    </script>
+</body>
+</html>

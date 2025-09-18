@@ -1,0 +1,10 @@
+{
+  "worldName": "Crystal Collector Arena",
+  "description": "Collect crystals and compete for the highest score!",
+  "version": "1.0.0",
+  "thumbnail": "https://example.com/thumbnail.png",
+  "tags": ["multiplayer", "competitive", "action"],
+  "maxPlayers": 16,
+  "minPlayers": 1,
+  "private": false
+}

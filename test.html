@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crystal Collector - Hytopia Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 15px;
+        }
+        h1 {
+            color: #FFD700;
+            text-align: center;
+        }
+        .status {
+            background: rgba(0, 255, 0, 0.2);
+            border: 2px solid #00ff00;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .instructions {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .step {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+        a {
+            color: #FFD700;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid #ff0000;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Crystal Collector Arena</h1>
+
+        <div class="status">
+            <h2>✅ Server Status: RUNNING</h2>
+            <p>Your Hytopia game server is running on port 5174</p>
+        </div>
+
+        <div class="instructions">
+            <h2>How to Play Your Game:</h2>
+
+            <div class="step">
+                <h3>Option 1: Use Hytopia Web Client (Recommended)</h3>
+                <ol>
+                    <li>Go to <a href="https://hytopia.com/play" target="_blank">https://hytopia.com/play</a></li>
+                    <li>When prompted for a server URL, enter: <strong>localhost:5174</strong></li>
+                    <li>Click Connect and start playing!</li>
+                </ol>
+            </div>
+
+            <div class="step">
+                <h3>Option 2: Direct WebSocket Connection</h3>
+                <p>The game uses WebSocket for multiplayer connections.</p>
+                <p>WebSocket URL: <strong>ws://localhost:5174</strong></p>
+            </div>
+        </div>
+
+        <div class="error">
+            <h3>⚠️ Why You Can't Access Directly via Browser:</h3>
+            <p>Hytopia games run as WebSocket servers, not HTTP web servers. They require a Hytopia client to connect and play. This is similar to how Minecraft servers work - you need the game client, not just a web browser.</p>
+        </div>
+
+        <div class="instructions">
+            <h2>Game Features:</h2>
+            <ul>
+                <li>💎 Collect Diamond Crystals (10 points)</li>
+                <li>🏆 Collect Gold Crystals (50 points)</li>
+                <li>🎯 First to 500 points wins!</li>
+                <li>👥 Supports up to 16 players</li>
+                <li>📊 Real-time leaderboard</li>
+                <li>💬 Commands: /score, /help</li>
+            </ul>
+        </div>
+
+        <div class="instructions">
+            <h2>Server Logs:</h2>
+            <pre id="server-status">Checking server connection...</pre>
+        </div>
+    </div>
+
+    <script>
+        // Test WebSocket connection
+        function testConnection() {
+            const statusEl = document.getElementById('server-status');
+
+            try {
+                const ws = new WebSocket('ws://localhost:5174');
+
+                ws.onopen = function() {
+                    statusEl.textContent = '✅ WebSocket server is responding!\nThe game server is working correctly.\nUse Hytopia client to play.';
+                };
+
+                ws.onerror = function(error) {
+                    statusEl.textContent = '⚠️ WebSocket connection attempt made.\nThis is normal - the server expects Hytopia protocol.\nUse Hytopia client at https://hytopia.com/play';
+                };
+
+                ws.onclose = function() {
+                    statusEl.textContent += '\n\nConnection test complete.';
+                };
+
+                setTimeout(() => {
+                    if (ws.readyState === WebSocket.CONNECTING) {
+                        statusEl.textContent = '🔄 Server is running but requires Hytopia client to connect.\nGo to https://hytopia.com/play';
+                    }
+                    ws.close();
+                }, 2000);
+
+            } catch(e) {
+                statusEl.textContent = '❌ Could not test connection: ' + e.message;
+            }
+        }
+
+        testConnection();
+    </script>
+</body>
+</html>

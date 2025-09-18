@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibes Coin Collector - Catch the Vibe! 😎</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #00bfff 0%, #87CEEB 50%, #1e90ff 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 10px,
+                rgba(255, 255, 255, 0.03) 10px,
+                rgba(255, 255, 255, 0.03) 20px
+            );
+            pointer-events: none;
+        }
+
+        #gameContainer {
+            background: rgba(255, 255, 255, 0.95);
+            border: 4px solid #000;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.3), 0 20px 60px rgba(0, 0, 0, 0.2);
+            max-width: 900px;
+            width: 100%;
+            z-index: 1;
+            position: relative;
+        }
+
+        #gameHeader {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        h1 {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 3em;
+            color: #000;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+            text-shadow: 3px 3px 0 #ffd700, 6px 6px 0 #ff69b4;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .tagline {
+            color: #ff1493;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        #gameStats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .stat {
+            background: #000;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 15px;
+            font-size: 1.2em;
+            text-align: center;
+            flex: 1;
+            box-shadow: 4px 4px 0 #ff69b4;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #ffd700;
+        }
+
+        #gameCanvas {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            background: linear-gradient(180deg, #87CEEB 0%, #98FB98 100%);
+            border: 4px solid #000;
+            border-radius: 15px;
+            overflow: hidden;
+            cursor: crosshair;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .vibes-character {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            animation: float 3s ease-in-out infinite;
+            user-select: none;
+            background: white;
+            border-radius: 50%;
+            border: 3px solid #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .vibes-character:hover {
+            transform: scale(1.3) rotate(15deg);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.8);
+        }
+
+        .vibes-character.cool {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            animation: float 2.5s ease-in-out infinite;
+        }
+
+        .vibes-character.chill {
+            background: linear-gradient(135deg, #00bfff, #87CEEB);
+            animation: float 2s ease-in-out infinite, spin 6s linear infinite;
+        }
+
+        .vibes-character.fire {
+            background: linear-gradient(135deg, #ff69b4, #ff1493);
+            animation: float 2.8s ease-in-out infinite, pulse 1s ease-in-out infinite;
+        }
+
+        .vibes-character.legendary {
+            background: linear-gradient(135deg, #9400d3, #ff00ff, #00ff00, #ffff00, #ff7f00, #ff0000);
+            animation: float 1.5s ease-in-out infinite, rainbow 2s linear infinite;
+            box-shadow: 0 0 30px rgba(255, 0, 255, 0.8);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); }
+            50% { box-shadow: 0 5px 30px rgba(255, 105, 180, 0.8); }
+        }
+
+        @keyframes rainbow {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+
+        .scorePopup {
+            position: absolute;
+            color: #000;
+            font-weight: bold;
+            font-size: 2em;
+            pointer-events: none;
+            z-index: 10;
+            animation: scoreFloat 1s ease-out forwards;
+            text-shadow: 2px 2px 0 #ffd700;
+            font-family: 'Bebas Neue', cursive;
+        }
+
+        @keyframes scoreFloat {
+            0% {
+                transform: translateY(0) scale(1) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-80px) scale(0.5) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        #gameControls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            background: #000;
+            color: white;
+            border: 3px solid #ffd700;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 4px 4px 0 #ff69b4;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 6px 6px 0 #ff69b4;
+            background: #ffd700;
+            color: #000;
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 2px 2px 0 #ff69b4;
+        }
+
+        #powerUp {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, #ff00ff, #ffff00);
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            border: 3px solid #000;
+            display: none;
+            z-index: 15;
+            animation: powerPulse 0.5s ease-in-out infinite;
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.8);
+        }
+
+        #powerUp.active {
+            display: block;
+        }
+
+        @keyframes powerPulse {
+            0%, 100% { transform: scale(1) rotate(-5deg); }
+            50% { transform: scale(1.1) rotate(5deg); }
+        }
+
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border: 4px solid #000;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            display: none;
+            z-index: 20;
+            box-shadow: 8px 8px 0 #ff69b4;
+        }
+
+        #gameOver h2 {
+            color: #000;
+            font-family: 'Bebas Neue', cursive;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            text-shadow: 3px 3px 0 #ffd700;
+        }
+
+        #gameOver p {
+            color: #000;
+            font-size: 1.2em;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        #gameOver.show {
+            display: block;
+            animation: bounceIn 0.5s ease-out;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: translate(-50%, -50%) scale(0) rotate(-180deg); }
+            70% { transform: translate(-50%, -50%) scale(1.1) rotate(10deg); }
+            100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+        }
+
+        .vibes-explosion {
+            position: fixed;
+            font-size: 40px;
+            animation: explode 1s ease-out forwards;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        @keyframes explode {
+            from {
+                transform: translate(-50%, -50%) scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            to {
+                transform: translate(-50%, -50%) scale(3) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .vibes-indicator {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #000;
+            font-size: 1.3em;
+            text-transform: uppercase;
+            font-weight: bold;
+            animation: pulse 2s ease-in-out infinite;
+            text-shadow: 2px 2px 0 #ffd700;
+        }
+
+        /* Custom character representation using CSS */
+        .custom-char {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .custom-char::before {
+            content: "😎";
+            font-size: 40px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .headphones {
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 25px;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="gameHeader">
+            <h1>😎 VIBES COIN COLLECTOR 🎧</h1>
+            <p class="tagline">Catch the Vibe & Stack Coins! 💰</p>
+        </div>
+
+        <div id="gameStats">
+            <div class="stat">💰 Vibes: <span id="score">0</span></div>
+            <div class="stat">⏱️ Time: <span id="timer">60</span>s</div>
+            <div class="stat">😎 Caught: <span id="coinCount">0</span></div>
+            <div class="stat">🏆 Best: <span id="highScore">0</span></div>
+        </div>
+
+        <div id="gameCanvas">
+            <div class="vibes-indicator">🎵 VIBE CHECK 🎵</div>
+            <div id="powerUp">🎧 MEGA VIBES! 2X</div>
+            <div id="gameOver">
+                <h2>😎 Vibes Maxed Out! 🎧</h2>
+                <p>💰 Total Vibes: <span id="finalScore">0</span></p>
+                <p>😎 Characters Caught: <span id="finalCoins">0</span></p>
+                <button onclick="startGame()">🎮 Vibe Again!</button>
+            </div>
+        </div>
+
+        <div id="gameControls">
+            <button onclick="startGame()">🎮 Start Vibing</button>
+            <button onclick="togglePause()">⏸️ Pause Vibes</button>
+            <button onclick="resetHighScore()">🔄 Reset Score</button>
+        </div>
+    </div>
+
+    <script>
+        let score = 0;
+        let timeLeft = 60;
+        let coinsCollected = 0;
+        let gameActive = false;
+        let isPaused = false;
+        let megaVibes = false;
+        let gameTimer;
+        let spawnInterval;
+        let highScore = localStorage.getItem('vibesHighScore') || 0;
+
+        // Update high score display
+        document.getElementById('highScore').textContent = highScore;
+
+        // Vibes characters with different styles and values
+        const vibesTypes = [
+            { emoji: '😎', name: 'COOL', value: 10, className: 'cool', rarity: 0.35, headphones: '🎧' },
+            { emoji: '😊', name: 'CHILL', value: 25, className: 'chill', rarity: 0.25, headphones: '🎧' },
+            { emoji: '🤩', name: 'FIRE', value: 50, className: 'fire', rarity: 0.15, headphones: '🎧' },
+            { emoji: '🌟', name: 'LEGENDARY', value: 100, className: 'legendary', rarity: 0.05, headphones: '🎧' },
+            { emoji: '😄', name: 'HAPPY', value: 15, className: 'cool', rarity: 0.3, headphones: '🎧' },
+            { emoji: '🥳', name: 'PARTY', value: 30, className: 'fire', rarity: 0.2, headphones: '🎧' },
+            { emoji: '🤗', name: 'LOVE', value: 20, className: 'chill', rarity: 0.25, headphones: '🎧' },
+            { emoji: '✨', name: 'SPARKLE', value: 35, className: 'fire', rarity: 0.18, headphones: '🎧' }
+        ];
+
+        class VibesCharacter {
+            constructor(vibeData) {
+                this.emoji = vibeData.emoji;
+                this.name = vibeData.name;
+                this.value = vibeData.value;
+                this.className = vibeData.className;
+                this.headphones = vibeData.headphones;
+                this.element = null;
+            }
+
+            spawn() {
+                const canvas = document.getElementById('gameCanvas');
+                const character = document.createElement('div');
+                character.className = `vibes-character ${this.className}`;
+
+                // Create character with headphones
+                const customChar = document.createElement('div');
+                customChar.className = 'custom-char';
+                customChar.innerHTML = `
+                    ${this.emoji}
+                    <span class="headphones">${this.headphones}</span>
+                `;
+                character.appendChild(customChar);
+
+                // Random position
+                const maxX = canvas.offsetWidth - 70;
+                const maxY = canvas.offsetHeight - 70;
+                character.style.left = Math.random() * maxX + 'px';
+                character.style.top = Math.random() * maxY + 'px';
+
+                // Random animation delay
+                character.style.animationDelay = Math.random() * 2 + 's';
+
+                character.onclick = () => this.collect(character);
+
+                canvas.appendChild(character);
+                this.element = character;
+
+                // Auto-remove after random time (3-6 seconds)
+                setTimeout(() => {
+                    if (character.parentNode) {
+                        character.style.opacity = '0';
+                        character.style.transform = 'scale(0) rotate(180deg)';
+                        setTimeout(() => character.remove(), 300);
+                    }
+                }, 3000 + Math.random() * 3000);
+            }
+
+            collect(character) {
+                if (!gameActive || isPaused) return;
+
+                const rect = character.getBoundingClientRect();
+                const points = megaVibes ? this.value * 2 : this.value;
+
+                // Update score
+                score += points;
+                coinsCollected++;
+                updateStats();
+
+                // Create score popup
+                createScorePopup(rect.left, rect.top, `+${points} ${this.name}!`);
+
+                // Play sound effect
+                playCollectSound(this.value);
+
+                // Remove character
+                character.style.transform = 'scale(2) rotate(360deg)';
+                character.style.opacity = '0';
+                setTimeout(() => character.remove(), 300);
+
+                // Special effects for rare characters
+                if (this.value >= 50) {
+                    createVibesExplosion(rect.left + 30, rect.top + 30);
+                }
+
+                // Chance for mega vibes mode
+                if (Math.random() < 0.1) {
+                    activateMegaVibes();
+                }
+            }
+        }
+
+        function createScorePopup(x, y, text) {
+            const popup = document.createElement('div');
+            popup.className = 'scorePopup';
+            popup.textContent = text;
+            popup.style.left = x + 'px';
+            popup.style.top = y + 'px';
+            document.getElementById('gameCanvas').appendChild(popup);
+
+            setTimeout(() => popup.remove(), 1000);
+        }
+
+        function createVibesExplosion(x, y) {
+            const emojis = ['✨', '💫', '⭐', '🌟', '💥'];
+            for (let i = 0; i < 5; i++) {
+                const explosion = document.createElement('div');
+                explosion.className = 'vibes-explosion';
+                explosion.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                explosion.style.left = x + 'px';
+                explosion.style.top = y + 'px';
+                document.body.appendChild(explosion);
+
+                setTimeout(() => explosion.remove(), 1000);
+            }
+        }
+
+        function playCollectSound(value) {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            // Different frequencies for different character values
+            oscillator.frequency.value = 400 + value * 8;
+            oscillator.type = 'sine';
+            gainNode.gain.value = 0.1;
+
+            oscillator.start();
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        function spawnCharacter() {
+            if (!gameActive || isPaused) return;
+
+            // Weighted random selection
+            const rand = Math.random();
+            let accumulator = 0;
+            let selectedVibe = vibesTypes[0];
+
+            for (const vibe of vibesTypes) {
+                accumulator += vibe.rarity;
+                if (rand < accumulator) {
+                    selectedVibe = vibe;
+                    break;
+                }
+            }
+
+            const vibesChar = new VibesCharacter(selectedVibe);
+            vibesChar.spawn();
+        }
+
+        function updateStats() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('timer').textContent = timeLeft;
+            document.getElementById('coinCount').textContent = coinsCollected;
+        }
+
+        function activateMegaVibes() {
+            if (megaVibes) return;
+
+            megaVibes = true;
+            document.getElementById('powerUp').classList.add('active');
+
+            // Create explosion effects
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    const x = Math.random() * window.innerWidth;
+                    const y = Math.random() * window.innerHeight;
+                    createVibesExplosion(x, y);
+                }, i * 200);
+            }
+
+            setTimeout(() => {
+                megaVibes = false;
+                document.getElementById('powerUp').classList.remove('active');
+            }, 5000);
+        }
+
+        function startGame() {
+            // Reset game state
+            score = 0;
+            timeLeft = 60;
+            coinsCollected = 0;
+            gameActive = true;
+            isPaused = false;
+            megaVibes = false;
+
+            // Clear canvas
+            const canvas = document.getElementById('gameCanvas');
+            canvas.querySelectorAll('.vibes-character').forEach(c => c.remove());
+            document.getElementById('gameOver').classList.remove('show');
+
+            updateStats();
+
+            // Start spawning characters
+            spawnInterval = setInterval(spawnCharacter, 600);
+
+            // Start game timer
+            gameTimer = setInterval(() => {
+                if (!isPaused) {
+                    timeLeft--;
+                    updateStats();
+
+                    if (timeLeft <= 0) {
+                        endGame();
+                    }
+
+                    // Increase spawn rate as time goes on
+                    if (timeLeft === 30) {
+                        clearInterval(spawnInterval);
+                        spawnInterval = setInterval(spawnCharacter, 400);
+                    }
+                }
+            }, 1000);
+
+            // Spawn initial characters
+            for (let i = 0; i < 5; i++) {
+                setTimeout(spawnCharacter, i * 200);
+            }
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(gameTimer);
+            clearInterval(spawnInterval);
+
+            // Update high score
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('vibesHighScore', highScore);
+                document.getElementById('highScore').textContent = highScore;
+
+                // Celebration for new high score
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        const x = Math.random() * window.innerWidth;
+                        const y = Math.random() * window.innerHeight;
+                        createVibesExplosion(x, y);
+                    }, i * 200);
+                }
+            }
+
+            // Show game over screen
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('finalCoins').textContent = coinsCollected;
+            document.getElementById('gameOver').classList.add('show');
+        }
+
+        function togglePause() {
+            if (!gameActive) return;
+            isPaused = !isPaused;
+        }
+
+        function resetHighScore() {
+            highScore = 0;
+            localStorage.setItem('vibesHighScore', 0);
+            document.getElementById('highScore').textContent = 0;
+        }
+
+        // Start game automatically
+        window.onload = () => {
+            startGame();
+        };
+    </script>
+</body>
+</html>
