@@ -699,6 +699,10 @@
         }
 
         function startGame() {
+            // Clear any existing timers first
+            if (gameTimer) clearInterval(gameTimer);
+            if (spawnInterval) clearInterval(spawnInterval);
+
             // Reset game state
             score = 0;
             timeLeft = 60;
@@ -708,10 +712,11 @@
             moonMode = false;
             collectionStats = { vibes: 0, rekt: 0, penguin: 0 };
 
-            // Clear canvas
+            // Clear canvas and remove all characters
             const canvas = document.getElementById('gameCanvas');
             canvas.querySelectorAll('.meme-character').forEach(c => c.remove());
             document.getElementById('gameOver').classList.remove('show');
+            document.getElementById('powerUp').classList.remove('active');
 
             updateStats();
 
@@ -800,9 +805,9 @@
         `;
         document.head.appendChild(style);
 
-        // Auto-start
+        // Initialize high score on load
         window.onload = () => {
-            startGame();
+            document.getElementById('highScore').textContent = highScore;
         };
     </script>
 </body>
