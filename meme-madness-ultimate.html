@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>Meme Coin Madness - Ultimate Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 50%, #000000 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255, 255, 255, 0.02) 10px,
+                rgba(255, 255, 255, 0.02) 20px
+            );
+            animation: slide 10s linear infinite;
+        }
+
+        @keyframes slide {
+            from { transform: translate(-50%, -50%); }
+            to { transform: translate(0, 0); }
+        }
+
+        #gameContainer {
+            background: rgba(255, 255, 255, 0.95);
+            border: 4px solid #000;
+            border-radius: 20px;
+            padding: 15px;
+            width: 95%;
+            max-width: 900px;
+            height: 95vh;
+            max-height: 900px;
+            z-index: 10;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (max-width: 768px) {
+            #gameContainer {
+                width: 100%;
+                height: 100vh;
+                max-height: 100vh;
+                border-radius: 0;
+                border: none;
+                padding: 10px;
+            }
+        }
+
+        #gameHeader {
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #000;
+            flex-shrink: 0;
+        }
+
+        h1 {
+            font-family: 'Bebas Neue', cursive;
+            font-size: clamp(2em, 5vw, 3em);
+            color: #000;
+            text-shadow: 3px 3px 0 #ffd700;
+            margin: 0;
+            letter-spacing: 2px;
+            animation: rainbow 3s linear infinite;
+        }
+
+        @keyframes rainbow {
+            0% { text-shadow: 3px 3px 0 #ff0000; }
+            33% { text-shadow: 3px 3px 0 #00ff00; }
+            66% { text-shadow: 3px 3px 0 #0000ff; }
+            100% { text-shadow: 3px 3px 0 #ff0000; }
+        }
+
+        .tagline {
+            margin-top: 5px;
+            font-size: clamp(0.9em, 3vw, 1.4em);
+            font-weight: bold;
+            color: #333;
+        }
+
+        #gameStats {
+            display: flex;
+            justify-content: space-around;
+            margin: 10px 0;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+
+        .stat {
+            background: #000;
+            color: #fff;
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-size: clamp(0.9em, 2.5vw, 1.2em);
+            min-width: 100px;
+            text-align: center;
+            margin: 3px;
+            border: 2px solid #ffd700;
+        }
+
+        .stat span {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        #comboBarContainer {
+            width: 100%;
+            height: 30px;
+            background: #333;
+            border: 2px solid #000;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            margin: 10px 0;
+            flex-shrink: 0;
+        }
+
+        #comboBar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #00ff00, #ffff00, #ff00ff);
+            transition: width 0.3s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #comboBar::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg,
+                transparent,
+                rgba(255,255,255,0.5),
+                transparent);
+            animation: shimmer 1s infinite;
+        }
+
+        @keyframes shimmer {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(100%); }
+        }
+
+        #comboText {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            text-shadow: 2px 2px 0 #000;
+            z-index: 10;
+        }
+
+        #gameCanvas {
+            flex: 1;
+            background: linear-gradient(to bottom, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            border: 3px solid #000;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            cursor: crosshair;
+            margin: 10px 0;
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10% { transform: translateX(-10px) rotate(-1deg); }
+            20% { transform: translateX(10px) rotate(1deg); }
+            30% { transform: translateX(-8px) rotate(-1deg); }
+            40% { transform: translateX(8px) rotate(1deg); }
+            50% { transform: translateX(-6px) rotate(-0.5deg); }
+            60% { transform: translateX(6px) rotate(0.5deg); }
+            70% { transform: translateX(-4px) rotate(-0.5deg); }
+            80% { transform: translateX(4px) rotate(0.5deg); }
+            90% { transform: translateX(-2px); }
+        }
+
+        .meme-character {
+            position: absolute;
+            cursor: pointer;
+            user-select: none;
+            width: clamp(50px, 10vw, 70px);
+            height: clamp(50px, 10vw, 70px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(30px, 6vw, 45px);
+            background-size: cover;
+            background-position: center;
+            border: 3px solid #000;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: transform 0.1s;
+        }
+
+        .meme-character.vibes {
+            background-image: url('IMG_6648.PNG');
+        }
+
+        .meme-character.rekt {
+            background-image: url('IMG_0931.PNG');
+        }
+
+        .meme-character.penguin {
+            background-image: url('IMG_0932.PNG');
+        }
+
+        .meme-character.nft {
+            background-image: url('IMG_0837.PNG');
+        }
+
+        .meme-character.moon {
+            background: radial-gradient(circle, #ffd700, #ffed4e);
+            font-size: clamp(35px, 7vw, 50px);
+        }
+
+        .meme-character:hover {
+            transform: scale(1.2) rotate(10deg);
+            z-index: 100;
+        }
+
+        .meme-character:active {
+            transform: scale(0.8) rotate(-10deg);
+        }
+
+        .super-explosion {
+            position: absolute;
+            pointer-events: none;
+            width: 200px;
+            height: 200px;
+            animation: superExplode 1s ease-out forwards;
+            z-index: 200;
+        }
+
+        @keyframes superExplode {
+            0% {
+                transform: translate(-50%, -50%) scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(2) rotate(180deg);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(4) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .explosion-particle {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particle 1s ease-out forwards;
+        }
+
+        @keyframes particle {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(
+                    calc(-50% + var(--dx)),
+                    calc(-50% + var(--dy))
+                ) scale(0);
+                opacity: 0;
+            }
+        }
+
+        .points-popup {
+            position: absolute;
+            font-size: clamp(20px, 4vw, 28px);
+            font-weight: bold;
+            pointer-events: none;
+            animation: pointsFloat 1.5s ease-out forwards;
+            z-index: 100;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .points-popup.positive {
+            color: #00ff00;
+        }
+
+        .points-popup.negative {
+            color: #ff0000;
+        }
+
+        .points-popup.mega {
+            color: #ffd700;
+            font-size: clamp(30px, 6vw, 40px);
+            animation: megaPoints 2s ease-out forwards;
+        }
+
+        @keyframes pointsFloat {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            50% {
+                transform: translateY(-30px) scale(1.5);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-60px) scale(0.5);
+            }
+        }
+
+        @keyframes megaPoints {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-40px) scale(2) rotate(180deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-80px) scale(0) rotate(360deg);
+            }
+        }
+
+        #gameControls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+
+        #gameControls button {
+            padding: clamp(10px, 2vw, 15px) clamp(15px, 3vw, 30px);
+            font-size: clamp(0.9em, 2.5vw, 1.1em);
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            border: 2px solid #000;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        #gameControls button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        #gameControls button:active {
+            transform: translateY(0);
+        }
+
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+            border: 4px solid #000;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            z-index: 100;
+            display: none;
+            min-width: 280px;
+            max-width: 90%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        #gameOver h2 {
+            color: #000;
+            font-size: clamp(1.8em, 5vw, 2.5em);
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 0 #ffd700;
+        }
+
+        #gameOver p {
+            color: #000;
+            font-size: clamp(1em, 3vw, 1.2em);
+            margin: 8px 0;
+            font-weight: bold;
+        }
+
+        #gameOver button {
+            margin-top: 15px;
+            padding: clamp(10px, 2vw, 15px) clamp(20px, 4vw, 30px);
+            font-size: clamp(1em, 3vw, 1.2em);
+            background: #ffd700;
+            border: 2px solid #000;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        #gameOver button:hover {
+            background: #ffed4e;
+            transform: scale(1.05);
+        }
+
+        #gameOver button:active {
+            transform: scale(0.95);
+        }
+
+        #gameOver.show {
+            display: block !important;
+            animation: bounceIn 0.5s ease-out;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: translate(-50%, -50%) scale(0) rotate(-180deg); }
+            70% { transform: translate(-50%, -50%) scale(1.1) rotate(10deg); }
+            100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+        }
+
+        #powerUp, #chaosMode {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: clamp(2em, 6vw, 3em);
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 3px 3px 0 #000;
+            display: none;
+            z-index: 50;
+            animation: powerUpPulse 0.5s ease-in-out infinite;
+        }
+
+        #powerUp.active, #chaosMode.active {
+            display: block;
+        }
+
+        @keyframes powerUpPulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+            50% { transform: translate(-50%, -50%) scale(1.3) rotate(10deg); }
+        }
+
+        #voiceCallout {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: clamp(2em, 5vw, 3em);
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 3px 3px 0 #000,
+                        -3px -3px 0 #000,
+                        3px -3px 0 #000,
+                        -3px 3px 0 #000;
+            display: none;
+            z-index: 60;
+            animation: callout 1s ease-out forwards;
+        }
+
+        @keyframes callout {
+            0% {
+                transform: translateX(-50%) scale(0) rotate(-180deg);
+                opacity: 0;
+            }
+            50% {
+                transform: translateX(-50%) scale(1.5) rotate(10deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(-50%) scale(1) rotate(0deg);
+                opacity: 0;
+            }
+        }
+
+        #playerInfo {
+            display: none;
+        }
+
+        #leaderboard {
+            display: none;
+        }
+
+        .mobile-controls {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-controls {
+                display: block;
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                z-index: 100;
+            }
+
+            .power-button {
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #ff00ff, #00ffff);
+                border: 3px solid #000;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                font-size: 30px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+            }
+
+            .power-button:active {
+                transform: scale(0.9);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="gameHeader">
+            <h1>🎮 MEME COIN MADNESS 🚀</h1>
+            <p class="tagline">
+                <span style="color: #00ff00; text-shadow: 2px 2px 0 #000;">MFERS</span>
+                <span style="color: #fff;">•</span>
+                <span style="color: #ff0000; text-shadow: 2px 2px 0 #000;">REKT</span>
+                <span style="color: #fff;">•</span>
+                <span style="color: #00ffff; text-shadow: 2px 2px 0 #000;">PENGUINS</span>
+                <span style="color: #fff;">•</span>
+                <span style="color: #ff69b4; text-shadow: 2px 2px 0 #000;">LIL BANGERS</span>
+            </p>
+        </div>
+
+        <div id="gameStats">
+            <div class="stat">💰 <span id="score">0</span></div>
+            <div class="stat">⏰ <span id="timer">60</span></div>
+            <div class="stat">⚡ <span id="combo">0</span></div>
+            <div class="stat">🏆 <span id="highScore">0</span></div>
+        </div>
+
+        <div id="comboBarContainer">
+            <div id="comboBar"></div>
+            <div id="comboText">COMBO x1</div>
+        </div>
+
+        <div id="gameCanvas">
+            <div id="powerUp">🚀 MOON MODE! 3X</div>
+            <div id="chaosMode">🌈 CHAOS MODE!</div>
+            <div id="voiceCallout"></div>
+            <div id="gameOver">
+                <h2>Game Over!</h2>
+                <p>💰 Final Score: <span id="finalScore">0</span></p>
+                <p>⚡ Max Combo: <span id="maxCombo">0</span></p>
+                <button onclick="startGame()">Play Again!</button>
+            </div>
+        </div>
+
+        <div id="gameControls">
+            <button onclick="startGame()">🎮 Start</button>
+            <button onclick="togglePause()">⏸️ Pause</button>
+            <button onclick="activateChaosMode()">🌈 CHAOS!</button>
+        </div>
+
+        <div class="mobile-controls">
+            <button class="power-button" onclick="activateChaosMode()">⚡</button>
+        </div>
+    </div>
+
+    <script>
+        let score = 0;
+        let timeLeft = 60;
+        let gameActive = false;
+        let isPaused = false;
+        let moonMode = false;
+        let chaosMode = false;
+        let combo = 0;
+        let maxCombo = 0;
+        let lastCollectTime = 0;
+        let gameTimer;
+        let spawnInterval;
+        let highScore = localStorage.getItem('ultimateHighScore') || 0;
+        let collectionStats = { vibes: 0, rekt: 0, penguin: 0, nft: 0, moon: 0 };
+
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        const callouts = [
+            "AMAZING!", "TO THE MOON!", "DIAMOND HANDS!", "WAGMI!",
+            "LFG!", "BASED!", "BULLISH!", "GEM FOUND!", "MOON SOON!",
+            "APE IN!", "SEND IT!", "MEGA PUMP!", "100X!", "GENERATIONAL!"
+        ];
+
+        const movementPatterns = ['bounce-move', 'spiral-move', 'zigzag-move', 'orbit-move', 'teleport-move'];
+
+        const characterTypes = [
+            { name: 'VIBES', value: 25, className: 'vibes', rarity: 0.25, emoji: '😎' },
+            { name: 'REKT', value: -15, className: 'rekt', rarity: 0.2, emoji: '👻' },
+            { name: 'PENGUIN', value: 50, className: 'penguin', rarity: 0.2, emoji: '🐧' },
+            { name: 'NFT', value: 75, className: 'nft', rarity: 0.15, emoji: '🎨' },
+            { name: 'MOON', value: 100, className: 'moon', rarity: 0.1, emoji: '🌙', special: true },
+            { name: 'CHAOS', value: 200, className: 'chaos', rarity: 0.1, emoji: '🌈', special: true }
+        ];
+
+        // Touch handling for mobile
+        function setupMobileControls() {
+            const canvas = document.getElementById('gameCanvas');
+
+            canvas.addEventListener('touchstart', handleTouch, { passive: false });
+            canvas.addEventListener('touchmove', handleTouch, { passive: false });
+
+            function handleTouch(e) {
+                e.preventDefault();
+                if (!gameActive) return;
+
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+
+                // Check if touch hits any character
+                const characters = canvas.querySelectorAll('.meme-character');
+                characters.forEach(char => {
+                    const charRect = char.getBoundingClientRect();
+                    const charX = charRect.left - rect.left + charRect.width / 2;
+                    const charY = charRect.top - rect.top + charRect.height / 2;
+
+                    const distance = Math.sqrt(Math.pow(x - charX, 2) + Math.pow(y - charY, 2));
+                    if (distance < charRect.width / 2 + 10) { // Add some tolerance
+                        char.click();
+                    }
+                });
+            }
+        }
+
+        class MemeCharacter {
+            constructor(type) {
+                this.type = type;
+                this.element = document.createElement('div');
+                this.element.className = `meme-character ${type.className}`;
+
+                const canvas = document.getElementById('gameCanvas');
+                const canvasRect = canvas.getBoundingClientRect();
+
+                // Random spawn position
+                const spawnType = Math.random();
+                if (spawnType < 0.25) {
+                    this.x = Math.random() * (canvasRect.width - 70);
+                    this.y = -70;
+                } else if (spawnType < 0.5) {
+                    this.x = Math.random() * (canvasRect.width - 70);
+                    this.y = canvas.offsetHeight;
+                } else if (spawnType < 0.75) {
+                    this.x = -70;
+                    this.y = Math.random() * (canvas.offsetHeight - 70);
+                } else {
+                    this.x = canvasRect.width;
+                    this.y = Math.random() * (canvas.offsetHeight - 70);
+                }
+
+                this.clicked = false;
+                this.speed = 2 + Math.random() * 4;
+                this.angle = Math.random() * Math.PI * 2;
+                this.time = 0;
+                this.centerX = canvasRect.width / 2;
+                this.centerY = canvas.offsetHeight / 2;
+            }
+
+            spawn() {
+                const canvas = document.getElementById('gameCanvas');
+                this.element.style.left = this.x + 'px';
+                this.element.style.top = this.y + 'px';
+
+                if (this.type.className === 'moon' || this.type.className === 'chaos') {
+                    this.element.textContent = this.type.emoji;
+                }
+
+                this.element.addEventListener('click', () => this.collect());
+                canvas.appendChild(this.element);
+
+                this.moveInterval = setInterval(() => this.move(), 30);
+                this.element._moveInterval = this.moveInterval;
+
+                this.removeTimeout = setTimeout(() => {
+                    if (!this.clicked) this.remove();
+                }, 8000);
+                this.element._removeTimeout = this.removeTimeout;
+            }
+
+            move() {
+                if (!gameActive || isPaused || this.clicked) return;
+
+                this.time += 0.05;
+                const pattern = Math.floor(this.type.rarity * 10) % 5;
+
+                switch(pattern) {
+                    case 0: // Circular
+                        this.x = this.centerX + Math.cos(this.time * this.speed) * 150;
+                        this.y = this.centerY + Math.sin(this.time * this.speed) * 150;
+                        break;
+                    case 1: // Zigzag
+                        this.x += Math.sin(this.time * 3) * this.speed * 2;
+                        this.y += this.speed;
+                        break;
+                    case 2: // Bounce
+                        this.x += Math.cos(this.angle) * this.speed;
+                        this.y += Math.sin(this.angle) * this.speed;
+
+                        const canvas = document.getElementById('gameCanvas');
+                        if (this.x <= 0 || this.x >= canvas.offsetWidth - 70) {
+                            this.angle = Math.PI - this.angle;
+                        }
+                        if (this.y <= 0 || this.y >= canvas.offsetHeight - 70) {
+                            this.angle = -this.angle;
+                        }
+                        break;
+                    case 3: // Figure 8
+                        this.x = this.centerX + Math.sin(this.time * this.speed) * 150;
+                        this.y = this.centerY + Math.sin(this.time * this.speed * 2) * 100;
+                        break;
+                    case 4: // Random walk
+                        this.x += (Math.random() - 0.5) * this.speed * 4;
+                        this.y += (Math.random() - 0.5) * this.speed * 4;
+                        break;
+                }
+
+                const canvas = document.getElementById('gameCanvas');
+                this.x = Math.max(0, Math.min(canvas.offsetWidth - 70, this.x));
+                this.y = Math.max(0, Math.min(canvas.offsetHeight - 70, this.y));
+
+                this.element.style.left = this.x + 'px';
+                this.element.style.top = this.y + 'px';
+            }
+
+            collect() {
+                if (this.clicked || !gameActive) return;
+                this.clicked = true;
+
+                // Update combo
+                const now = Date.now();
+                if (now - lastCollectTime < 1000) {
+                    combo++;
+                    if (combo > maxCombo) maxCombo = combo;
+
+                    // Show callout for high combos
+                    if (combo > 5 && combo % 5 === 0) {
+                        showVoiceCallout();
+                    }
+                } else {
+                    combo = 1;
+                }
+                lastCollectTime = now;
+
+                const baseValue = this.type.value;
+                const comboMultiplier = 1 + (combo * 0.1);
+                const value = Math.round((moonMode ? baseValue * 3 : baseValue) * comboMultiplier);
+
+                score += value;
+
+                if (value > 0) {
+                    if (this.type.name === 'VIBES') collectionStats.vibes++;
+                    else if (this.type.name === 'PENGUIN') collectionStats.penguin++;
+                    else if (this.type.name === 'NFT') collectionStats.nft++;
+                    else if (this.type.name === 'MOON') {
+                        collectionStats.moon++;
+                        activateMoonMode();
+                    } else if (this.type.name === 'CHAOS') {
+                        activateChaosMode();
+                    }
+
+                    // Screen shake for big catches
+                    if (value > 100) {
+                        shakeScreen();
+                    }
+                } else {
+                    collectionStats.rekt++;
+                    combo = 0;
+                }
+
+                updateStats();
+                updateComboBar();
+                showPoints(this.element.offsetLeft + 35, this.element.offsetTop, value, combo > 1);
+                playSound(value, combo);
+
+                // Super explosion effect
+                createSuperExplosion(
+                    this.element.offsetLeft + 35,
+                    this.element.offsetTop + 35,
+                    this.type.emoji,
+                    value
+                );
+
+                this.remove();
+
+                // Chain reaction
+                if (combo > 10 && Math.random() < 0.3) {
+                    triggerChainReaction(this.element.offsetLeft, this.element.offsetTop);
+                }
+            }
+
+            remove() {
+                if (this.moveInterval) {
+                    clearInterval(this.moveInterval);
+                    this.moveInterval = null;
+                }
+                if (this.removeTimeout) {
+                    clearTimeout(this.removeTimeout);
+                    this.removeTimeout = null;
+                }
+                if (this.element.parentElement) {
+                    this.element.remove();
+                }
+            }
+        }
+
+        function shakeScreen() {
+            const container = document.getElementById('gameContainer');
+            container.classList.add('shake');
+            setTimeout(() => container.classList.remove('shake'), 500);
+        }
+
+        function showVoiceCallout() {
+            const callout = document.getElementById('voiceCallout');
+            callout.textContent = callouts[Math.floor(Math.random() * callouts.length)];
+            callout.style.display = 'block';
+
+            setTimeout(() => {
+                callout.style.display = 'none';
+            }, 1000);
+        }
+
+        function updateComboBar() {
+            const bar = document.getElementById('comboBar');
+            const text = document.getElementById('comboText');
+
+            const percentage = Math.min((combo / 20) * 100, 100);
+            bar.style.width = percentage + '%';
+
+            if (combo > 1) {
+                text.textContent = `COMBO x${combo}!`;
+                if (combo > 10) {
+                    text.style.fontSize = '1.2em';
+                    text.style.color = '#ffd700';
+                } else if (combo > 5) {
+                    text.style.fontSize = '1.1em';
+                    text.style.color = '#ffff00';
+                } else {
+                    text.style.fontSize = '1em';
+                    text.style.color = '#ffffff';
+                }
+            } else {
+                text.textContent = 'COMBO x1';
+                text.style.fontSize = '1em';
+                text.style.color = '#ffffff';
+            }
+        }
+
+        function createSuperExplosion(x, y, emoji, value) {
+            const canvas = document.getElementById('gameCanvas');
+
+            // Main explosion
+            const explosion = document.createElement('div');
+            explosion.className = 'super-explosion';
+            explosion.style.left = x + 'px';
+            explosion.style.top = y + 'px';
+
+            // Create gradient based on value
+            let colors;
+            if (value > 150) {
+                colors = ['#ffd700', '#ff00ff', '#00ffff'];
+            } else if (value > 50) {
+                colors = ['#00ff00', '#ffff00', '#ff00ff'];
+            } else if (value > 0) {
+                colors = ['#00ff00', '#00ffff', '#ffffff'];
+            } else {
+                colors = ['#ff0000', '#ff6600', '#ffcccc'];
+            }
+
+            explosion.style.background = `radial-gradient(circle, ${colors.join(', ')})`;
+            canvas.appendChild(explosion);
+
+            // Emoji explosions
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const emojiExp = document.createElement('div');
+                    emojiExp.style.position = 'absolute';
+                    emojiExp.style.left = (x + (Math.random() - 0.5) * 100) + 'px';
+                    emojiExp.style.top = (y + (Math.random() - 0.5) * 100) + 'px';
+                    emojiExp.style.fontSize = '40px';
+                    emojiExp.textContent = emoji;
+                    emojiExp.style.animation = 'superExplode 0.8s ease-out forwards';
+                    emojiExp.style.zIndex = '201';
+                    canvas.appendChild(emojiExp);
+
+                    setTimeout(() => emojiExp.remove(), 800);
+                }, i * 50);
+            }
+
+            // Particles
+            for (let i = 0; i < 12; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'explosion-particle';
+                const angle = (Math.PI * 2 * i) / 12;
+                const distance = 100 + Math.random() * 50;
+
+                particle.style.setProperty('--dx', Math.cos(angle) * distance + 'px');
+                particle.style.setProperty('--dy', Math.sin(angle) * distance + 'px');
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+                canvas.appendChild(particle);
+                setTimeout(() => particle.remove(), 1000);
+            }
+
+            setTimeout(() => explosion.remove(), 1000);
+        }
+
+        function triggerChainReaction(x, y) {
+            const canvas = document.getElementById('gameCanvas');
+            const nearby = canvas.querySelectorAll('.meme-character');
+
+            nearby.forEach(char => {
+                if (char.clicked) return;
+
+                const charRect = char.getBoundingClientRect();
+                const canvasRect = canvas.getBoundingClientRect();
+                const charX = charRect.left - canvasRect.left;
+                const charY = charRect.top - canvasRect.top;
+
+                const distance = Math.sqrt(Math.pow(x - charX, 2) + Math.pow(y - charY, 2));
+
+                if (distance < 150) {
+                    setTimeout(() => {
+                        if (char.parentElement) {
+                            char.click();
+                        }
+                    }, Math.random() * 200);
+                }
+            });
+        }
+
+        function showPoints(x, y, value, isCombo) {
+            const popup = document.createElement('div');
+            popup.className = `points-popup ${value > 0 ? (value > 100 ? 'mega' : 'positive') : 'negative'}`;
+            popup.textContent = value > 0 ? `+${value}${isCombo ? ' COMBO!' : ''}` : value;
+            popup.style.left = x + 'px';
+            popup.style.top = y + 'px';
+
+            document.getElementById('gameCanvas').appendChild(popup);
+            setTimeout(() => popup.remove(), 1500);
+        }
+
+        function playSound(value, comboLevel) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            if (value > 0) {
+                // Musical progression based on combo
+                const notes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
+                const noteIndex = Math.min(comboLevel - 1, notes.length - 1);
+                oscillator.frequency.value = notes[Math.max(0, noteIndex)];
+                oscillator.type = 'sine';
+
+                // Add harmony for high combos
+                if (comboLevel > 5) {
+                    const harmonyOsc = audioContext.createOscillator();
+                    const harmonyGain = audioContext.createGain();
+                    harmonyOsc.connect(harmonyGain);
+                    harmonyGain.connect(audioContext.destination);
+                    harmonyOsc.frequency.value = notes[Math.max(0, noteIndex)] * 1.5;
+                    harmonyOsc.type = 'triangle';
+                    harmonyGain.gain.value = 0.05;
+                    harmonyOsc.start();
+                    harmonyGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    harmonyOsc.stop(audioContext.currentTime + 0.3);
+                }
+            } else {
+                oscillator.frequency.value = 150;
+                oscillator.type = 'sawtooth';
+            }
+
+            gainNode.gain.value = 0.1;
+            oscillator.start();
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        function spawnCharacter() {
+            if (!gameActive || isPaused) return;
+
+            const rand = Math.random();
+            let accumulator = 0;
+            let selectedChar = characterTypes[0];
+
+            for (const char of characterTypes) {
+                accumulator += char.rarity;
+                if (rand < accumulator) {
+                    selectedChar = char;
+                    break;
+                }
+            }
+
+            const memeChar = new MemeCharacter(selectedChar);
+            memeChar.spawn();
+
+            if (chaosMode && Math.random() < 0.3) {
+                setTimeout(() => {
+                    if (gameActive) {
+                        const bonusChar = new MemeCharacter(characterTypes[Math.floor(Math.random() * characterTypes.length)]);
+                        bonusChar.spawn();
+                    }
+                }, 200);
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('timer').textContent = timeLeft;
+            document.getElementById('combo').textContent = combo;
+        }
+
+        function activateMoonMode() {
+            if (moonMode) return;
+
+            moonMode = true;
+            document.getElementById('powerUp').classList.add('active');
+            shakeScreen();
+            showVoiceCallout();
+
+            setTimeout(() => {
+                moonMode = false;
+                document.getElementById('powerUp').classList.remove('active');
+            }, 5000);
+        }
+
+        function activateChaosMode() {
+            if (chaosMode || !gameActive) return;
+
+            chaosMode = true;
+            document.getElementById('chaosMode').classList.add('active');
+            shakeScreen();
+
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => spawnCharacter(), i * 100);
+            }
+
+            setTimeout(() => {
+                chaosMode = false;
+                document.getElementById('chaosMode').classList.remove('active');
+            }, 10000);
+        }
+
+        function startGame() {
+            if (window.gameStarting) return;
+            window.gameStarting = true;
+
+            if (gameActive) {
+                gameActive = false;
+            }
+
+            // Clear timeouts
+            const highestTimeoutId = setTimeout(() => {}, 0);
+            for (let i = 0; i < highestTimeoutId; i++) {
+                clearTimeout(i);
+            }
+
+            if (gameTimer) {
+                clearInterval(gameTimer);
+                gameTimer = null;
+            }
+            if (spawnInterval) {
+                clearInterval(spawnInterval);
+                spawnInterval = null;
+            }
+
+            const canvas = document.getElementById('gameCanvas');
+            const existingChars = canvas.querySelectorAll('.meme-character');
+            existingChars.forEach(char => {
+                if (char._moveInterval) clearInterval(char._moveInterval);
+                if (char._removeTimeout) clearTimeout(char._removeTimeout);
+            });
+
+            score = 0;
+            timeLeft = 60;
+            combo = 0;
+            maxCombo = 0;
+            lastCollectTime = 0;
+            isPaused = false;
+            moonMode = false;
+            chaosMode = false;
+            collectionStats = { vibes: 0, rekt: 0, penguin: 0, nft: 0, moon: 0 };
+
+            canvas.querySelectorAll('.meme-character, .points-popup, .explosion-particle, .super-explosion').forEach(c => c.remove());
+
+            document.getElementById('gameOver').classList.remove('show');
+            document.getElementById('gameOver').style.display = 'none';
+            document.getElementById('powerUp').classList.remove('active');
+            document.getElementById('chaosMode').classList.remove('active');
+
+            updateStats();
+            updateComboBar();
+
+            gameActive = true;
+
+            setTimeout(() => {
+                if (gameActive) {
+                    spawnInterval = setInterval(spawnCharacter, 800);
+
+                    gameTimer = setInterval(() => {
+                        if (!isPaused && gameActive) {
+                            timeLeft--;
+                            updateStats();
+
+                            if (timeLeft <= 0) {
+                                endGame();
+                            }
+
+                            if (timeLeft === 45 && gameActive) {
+                                clearInterval(spawnInterval);
+                                spawnInterval = setInterval(spawnCharacter, 600);
+                            } else if (timeLeft === 30 && gameActive) {
+                                clearInterval(spawnInterval);
+                                spawnInterval = setInterval(spawnCharacter, 400);
+                            } else if (timeLeft === 15 && gameActive) {
+                                clearInterval(spawnInterval);
+                                spawnInterval = setInterval(spawnCharacter, 300);
+                            }
+                        }
+                    }, 1000);
+
+                    for (let i = 0; i < 5; i++) {
+                        setTimeout(() => {
+                            if (gameActive) spawnCharacter();
+                        }, i * 200);
+                    }
+                }
+
+                window.gameStarting = false;
+            }, 100);
+        }
+
+        function endGame() {
+            gameActive = false;
+            window.gameStarting = false;
+            clearInterval(gameTimer);
+            clearInterval(spawnInterval);
+            gameTimer = null;
+            spawnInterval = null;
+
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('ultimateHighScore', highScore);
+                document.getElementById('highScore').textContent = highScore;
+
+                for (let i = 0; i < 20; i++) {
+                    setTimeout(() => {
+                        const x = Math.random() * window.innerWidth;
+                        const y = Math.random() * window.innerHeight;
+                        createSuperExplosion(x, y, '🎉', 200);
+                    }, i * 100);
+                }
+
+                showVoiceCallout();
+            }
+
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('maxCombo').textContent = maxCombo;
+            document.getElementById('gameOver').classList.add('show');
+        }
+
+        function togglePause() {
+            if (!gameActive) return;
+            isPaused = !isPaused;
+        }
+
+        // Initialize
+        window.onload = () => {
+            document.getElementById('highScore').textContent = highScore;
+            setupMobileControls();
+
+            // Prevent zoom on double tap for mobile
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', (e) => {
+                const now = Date.now();
+                if (now - lastTouchEnd <= 300) {
+                    e.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+
+            // Prevent scrolling on mobile
+            document.body.addEventListener('touchmove', (e) => {
+                if (e.target === document.body) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+        };
+    </script>
+</body>
+</html>
