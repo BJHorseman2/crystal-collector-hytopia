@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meme Coin Madness - Multiplayer Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 50%, #000000 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: "";
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255, 255, 255, 0.02) 10px,
+                rgba(255, 255, 255, 0.02) 20px
+            );
+            animation: slide 10s linear infinite;
+        }
+
+        @keyframes slide {
+            from { transform: translate(-50%, -50%); }
+            to { transform: translate(0, 0); }
+        }
+
+        #gameContainer {
+            background: rgba(255, 255, 255, 0.95);
+            border: 4px solid #000;
+            border-radius: 20px;
+            padding: 20px;
+            width: 900px;
+            max-width: 95vw;
+            z-index: 10;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        #gameHeader {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #000;
+        }
+
+        h1 {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 3em;
+            color: #000;
+            text-shadow: 3px 3px 0 #ffd700;
+            margin: 0;
+            letter-spacing: 2px;
+        }
+
+        .tagline {
+            margin-top: 10px;
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        #playerInfo {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            border: 2px solid #000;
+        }
+
+        #playerName {
+            padding: 10px;
+            font-size: 1.2em;
+            border: 2px solid #000;
+            border-radius: 5px;
+            margin-right: 10px;
+            width: 200px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        #setPlayerBtn {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            background: #ffd700;
+            border: 2px solid #000;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        #setPlayerBtn:hover {
+            background: #ffed4e;
+            transform: scale(1.05);
+        }
+
+        .currentPlayer {
+            margin-top: 10px;
+            font-size: 1.1em;
+            color: #333;
+        }
+
+        #gameStats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            background: #000;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            min-width: 150px;
+            text-align: center;
+            margin: 5px;
+            border: 2px solid #ffd700;
+        }
+
+        .stat span {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 1.3em;
+        }
+
+        #gameCanvas {
+            height: 400px;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98D8C8 100%);
+            border: 3px solid #000;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            cursor: crosshair;
+            margin-bottom: 20px;
+        }
+
+        .meme-character {
+            position: absolute;
+            cursor: pointer;
+            transition: transform 0.2s;
+            user-select: none;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            background-size: cover;
+            background-position: center;
+            border: 3px solid #000;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .meme-character.vibes {
+            background-image: url('IMG_6648.PNG');
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .meme-character.rekt {
+            background-image: url('IMG_0931.PNG');
+            animation: spin 4s linear infinite;
+        }
+
+        .meme-character.penguin {
+            background-image: url('IMG_0932.PNG');
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .meme-character:hover {
+            transform: scale(1.1);
+        }
+
+        .meme-character:active {
+            transform: scale(0.9);
+        }
+
+        .points-popup {
+            position: absolute;
+            font-size: 24px;
+            font-weight: bold;
+            pointer-events: none;
+            animation: pointsFloat 1s ease-out forwards;
+            z-index: 100;
+        }
+
+        .points-popup.positive {
+            color: #00ff00;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .points-popup.negative {
+            color: #ff0000;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        @keyframes pointsFloat {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+        }
+
+        #powerUp {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3em;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 3px 3px 0 #000;
+            display: none;
+            z-index: 50;
+            animation: powerUpPulse 0.5s ease-in-out infinite;
+        }
+
+        #powerUp.active {
+            display: block;
+        }
+
+        @keyframes powerUpPulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.2); }
+        }
+
+        #gameControls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #gameControls button {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            border: 2px solid #000;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        #gameControls button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+            border: 4px solid #000;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            z-index: 100;
+            display: none;
+            min-width: 300px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        #gameOver h2 {
+            color: #000;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0 #ffd700;
+        }
+
+        #gameOver p {
+            color: #000;
+            font-size: 1.2em;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        #gameOver button {
+            margin-top: 20px;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            background: #ffd700;
+            border: 2px solid #000;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        #gameOver button:hover {
+            background: #ffed4e;
+            transform: scale(1.05);
+        }
+
+        #gameOver.show {
+            display: block;
+            animation: bounceIn 0.5s ease-out;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: translate(-50%, -50%) scale(0) rotate(-180deg); }
+            70% { transform: translate(-50%, -50%) scale(1.1) rotate(10deg); }
+            100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+        }
+
+        #leaderboard {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f9f9f9;
+            border: 3px solid #000;
+            border-radius: 15px;
+        }
+
+        #leaderboard h2 {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 2em;
+            color: #000;
+            text-shadow: 2px 2px 0 #ffd700;
+        }
+
+        #leaderboardList {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border: 2px solid #000;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .leaderboard-entry:hover {
+            background: #ffd700;
+            transform: translateX(5px);
+        }
+
+        .leaderboard-entry.gold {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            font-size: 1.2em;
+        }
+
+        .leaderboard-entry.silver {
+            background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+            font-size: 1.1em;
+        }
+
+        .leaderboard-entry.bronze {
+            background: linear-gradient(135deg, #cd7f32, #e8b87f);
+            font-size: 1.05em;
+        }
+
+        .rank {
+            font-weight: bold;
+            font-size: 1.2em;
+            min-width: 30px;
+        }
+
+        .player-name {
+            flex: 1;
+            margin: 0 10px;
+            font-weight: bold;
+        }
+
+        .player-score {
+            font-weight: bold;
+            color: #000;
+            font-size: 1.1em;
+        }
+
+        .player-date {
+            font-size: 0.9em;
+            color: #666;
+            margin-left: 10px;
+        }
+
+        .explosion {
+            position: fixed;
+            pointer-events: none;
+            font-size: 40px;
+            animation: explode 1s ease-out forwards;
+            z-index: 100;
+        }
+
+        @keyframes explode {
+            from {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 1;
+            }
+            to {
+                transform: translate(-50%, -50%) scale(3);
+                opacity: 0;
+            }
+        }
+
+        #clearLeaderboardBtn {
+            margin-top: 10px;
+            padding: 8px 15px;
+            background: #ff4444;
+            color: white;
+            border: 2px solid #000;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        #clearLeaderboardBtn:hover {
+            background: #ff6666;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="gameHeader">
+            <h1>🎮 MEME COIN MADNESS 🚀</h1>
+            <p class="tagline">
+                <span style="color: #00ff00; text-shadow: 2px 2px 0 #000;">VIBES</span>
+                <span style="color: #fff;">vs</span>
+                <span style="color: #ffff00; text-shadow: 2px 2px 0 #000;">REKT</span>
+                <span style="color: #fff;">vs</span>
+                <span style="color: #ff69b4; text-shadow: 2px 2px 0 #000;">PENGUIN</span>
+                <span style="color: #ffd700; text-shadow: 2px 2px 0 #000;">- WHO WILL MOON?</span>
+            </p>
+        </div>
+
+        <div id="playerInfo">
+            <input type="text" id="playerName" placeholder="Enter your name" maxlength="20" />
+            <button id="setPlayerBtn" onclick="setPlayerName()">Set Name</button>
+            <div class="currentPlayer">Current Player: <span id="currentPlayerName">Anonymous</span></div>
+        </div>
+
+        <div id="gameStats">
+            <div class="stat">💰 Score: <span id="score">0</span></div>
+            <div class="stat">⏰ Time: <span id="timer">60</span></div>
+            <div class="stat">🎯 Caught: <span id="coinCount">0</span></div>
+            <div class="stat">🏆 Best: <span id="highScore">0</span></div>
+        </div>
+
+        <div id="gameCanvas">
+            <div id="powerUp">🚀 MOON MODE! 3X</div>
+            <div id="gameOver">
+                <h2>Game Over!</h2>
+                <p>💰 Final Score: <span id="finalScore">0</span></p>
+                <p>🎯 Memes Collected: <span id="finalCoins">0</span></p>
+                <p>Stats: <span id="gameStats"></span></p>
+                <p id="leaderboardResult"></p>
+                <button onclick="startGame()">Play Again!</button>
+            </div>
+        </div>
+
+        <div id="gameControls">
+            <button onclick="startGame()">🎮 Start Game</button>
+            <button onclick="togglePause()">⏸️ Pause</button>
+            <button onclick="resetHighScore()">🔄 Reset Personal Best</button>
+        </div>
+
+        <div id="leaderboard">
+            <h2>🏆 GLOBAL LEADERBOARD 🏆</h2>
+            <div id="leaderboardList"></div>
+            <center><button id="clearLeaderboardBtn" onclick="clearLeaderboard()">Clear All Scores</button></center>
+        </div>
+    </div>
+
+    <script>
+        let score = 0;
+        let timeLeft = 60;
+        let coinsCollected = 0;
+        let gameActive = false;
+        let isPaused = false;
+        let moonMode = false;
+        let gameTimer;
+        let spawnInterval;
+        let highScore = localStorage.getItem('ultimateMemeHighScore') || 0;
+        let collectionStats = { vibes: 0, rekt: 0, penguin: 0 };
+        let currentPlayer = localStorage.getItem('memePlayerName') || 'Anonymous';
+        let leaderboard = JSON.parse(localStorage.getItem('memeLeaderboard')) || [];
+
+        document.getElementById('currentPlayerName').textContent = currentPlayer;
+        document.getElementById('playerName').value = currentPlayer !== 'Anonymous' ? currentPlayer : '';
+
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        const characterTypes = [
+            { name: 'VIBES', value: 25, className: 'vibes', rarity: 0.35, emoji: '😎' },
+            { name: 'REKT', value: -10, className: 'rekt', rarity: 0.3, emoji: '👻' },
+            { name: 'PENGUIN', value: 50, className: 'penguin', rarity: 0.25, emoji: '🐧' },
+            { name: 'MOON', value: 100, className: 'moon', rarity: 0.1, emoji: '🌙' }
+        ];
+
+        function setPlayerName() {
+            const nameInput = document.getElementById('playerName').value.trim();
+            if (nameInput) {
+                currentPlayer = nameInput;
+                localStorage.setItem('memePlayerName', currentPlayer);
+                document.getElementById('currentPlayerName').textContent = currentPlayer;
+            }
+        }
+
+        class MemeCharacter {
+            constructor(type) {
+                this.type = type;
+                this.element = document.createElement('div');
+                this.element.className = `meme-character ${type.className}`;
+                this.x = Math.random() * (document.getElementById('gameCanvas').offsetWidth - 80);
+                this.y = -80;
+                this.speed = 2 + Math.random() * 3;
+                this.clicked = false;
+            }
+
+            spawn() {
+                const canvas = document.getElementById('gameCanvas');
+                this.element.style.left = this.x + 'px';
+                this.element.style.top = this.y + 'px';
+
+                this.element.addEventListener('click', () => this.collect());
+                canvas.appendChild(this.element);
+
+                this.moveInterval = setInterval(() => this.move(), 30);
+            }
+
+            move() {
+                if (!gameActive || isPaused || this.clicked) return;
+
+                this.y += this.speed;
+                this.element.style.top = this.y + 'px';
+
+                if (this.y > document.getElementById('gameCanvas').offsetHeight) {
+                    this.remove();
+                }
+            }
+
+            collect() {
+                if (this.clicked || !gameActive) return;
+                this.clicked = true;
+
+                const value = moonMode ? this.type.value * 3 : this.type.value;
+                score += value;
+
+                if (value > 0) {
+                    coinsCollected++;
+                    if (this.type.name === 'VIBES') collectionStats.vibes++;
+                    else if (this.type.name === 'PENGUIN') collectionStats.penguin++;
+
+                    if (this.type.name === 'MOON') {
+                        activateMoonMode();
+                    }
+                } else {
+                    collectionStats.rekt++;
+                }
+
+                updateStats();
+                showPoints(this.element.offsetLeft + 40, this.element.offsetTop, value);
+                playSound(value);
+
+                createExplosion(
+                    this.element.offsetLeft + 40 + this.element.parentElement.offsetLeft,
+                    this.element.offsetTop + 40 + this.element.parentElement.offsetTop,
+                    this.type.emoji
+                );
+
+                this.remove();
+            }
+
+            remove() {
+                clearInterval(this.moveInterval);
+                if (this.element.parentElement) {
+                    this.element.remove();
+                }
+            }
+        }
+
+        function createExplosion(x, y, emoji) {
+            const explosion = document.createElement('div');
+            explosion.className = 'explosion';
+            explosion.textContent = emoji;
+            explosion.style.left = x + 'px';
+            explosion.style.top = y + 'px';
+            document.body.appendChild(explosion);
+
+            setTimeout(() => explosion.remove(), 1000);
+        }
+
+        function showPoints(x, y, value) {
+            const popup = document.createElement('div');
+            popup.className = `points-popup ${value > 0 ? 'positive' : 'negative'}`;
+            popup.textContent = value > 0 ? `+${value}` : value;
+            popup.style.left = x + 'px';
+            popup.style.top = y + 'px';
+
+            document.getElementById('gameCanvas').appendChild(popup);
+            setTimeout(() => popup.remove(), 1000);
+        }
+
+        function playSound(value) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            if (value > 0) {
+                oscillator.frequency.value = 500 + value * 10;
+                oscillator.type = 'sine';
+            } else {
+                oscillator.frequency.value = 400 + value * 5;
+                oscillator.type = 'square';
+            }
+
+            gainNode.gain.value = 0.1;
+
+            oscillator.start();
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        function spawnCharacter() {
+            if (!gameActive || isPaused) return;
+
+            const rand = Math.random();
+            let accumulator = 0;
+            let selectedChar = characterTypes[0];
+
+            for (const char of characterTypes) {
+                accumulator += char.rarity;
+                if (rand < accumulator) {
+                    selectedChar = char;
+                    break;
+                }
+            }
+
+            const memeChar = new MemeCharacter(selectedChar);
+            memeChar.spawn();
+        }
+
+        function updateStats() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('timer').textContent = timeLeft;
+            document.getElementById('coinCount').textContent = coinsCollected;
+        }
+
+        function activateMoonMode() {
+            if (moonMode) return;
+
+            moonMode = true;
+            document.getElementById('powerUp').classList.add('active');
+
+            setTimeout(() => {
+                moonMode = false;
+                document.getElementById('powerUp').classList.remove('active');
+            }, 5000);
+        }
+
+        function startGame() {
+            if (gameTimer) clearInterval(gameTimer);
+            if (spawnInterval) clearInterval(spawnInterval);
+
+            score = 0;
+            timeLeft = 60;
+            coinsCollected = 0;
+            gameActive = true;
+            isPaused = false;
+            moonMode = false;
+            collectionStats = { vibes: 0, rekt: 0, penguin: 0 };
+
+            const canvas = document.getElementById('gameCanvas');
+            canvas.querySelectorAll('.meme-character').forEach(c => c.remove());
+            document.getElementById('gameOver').classList.remove('show');
+            document.getElementById('powerUp').classList.remove('active');
+
+            updateStats();
+
+            spawnInterval = setInterval(spawnCharacter, 600);
+
+            gameTimer = setInterval(() => {
+                if (!isPaused) {
+                    timeLeft--;
+                    updateStats();
+
+                    if (timeLeft <= 0) {
+                        endGame();
+                    }
+
+                    if (timeLeft === 40) {
+                        clearInterval(spawnInterval);
+                        spawnInterval = setInterval(spawnCharacter, 450);
+                    } else if (timeLeft === 20) {
+                        clearInterval(spawnInterval);
+                        spawnInterval = setInterval(spawnCharacter, 350);
+                    }
+                }
+            }, 1000);
+
+            for (let i = 0; i < 4; i++) {
+                setTimeout(spawnCharacter, i * 150);
+            }
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(gameTimer);
+            clearInterval(spawnInterval);
+
+            // Update personal high score
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('ultimateMemeHighScore', highScore);
+                document.getElementById('highScore').textContent = highScore;
+
+                for (let i = 0; i < 10; i++) {
+                    setTimeout(() => {
+                        createExplosion(
+                            Math.random() * window.innerWidth,
+                            Math.random() * window.innerHeight,
+                            ['🎉', '🎊', '🏆', '💰', '🚀'][Math.floor(Math.random() * 5)]
+                        );
+                    }, i * 100);
+                }
+            }
+
+            // Add to leaderboard
+            const leaderboardEntry = {
+                name: currentPlayer,
+                score: score,
+                date: new Date().toLocaleDateString(),
+                coins: coinsCollected
+            };
+
+            leaderboard.push(leaderboardEntry);
+            leaderboard.sort((a, b) => b.score - a.score);
+            leaderboard = leaderboard.slice(0, 10); // Keep top 10
+            localStorage.setItem('memeLeaderboard', JSON.stringify(leaderboard));
+
+            // Check rank
+            const rank = leaderboard.findIndex(entry =>
+                entry.name === currentPlayer && entry.score === score
+            ) + 1;
+
+            let rankMessage = '';
+            if (rank === 1) rankMessage = '🥇 NEW HIGH SCORE! #1 PLAYER! 🥇';
+            else if (rank === 2) rankMessage = '🥈 AMAZING! #2 ON LEADERBOARD! 🥈';
+            else if (rank === 3) rankMessage = '🥉 GREAT JOB! #3 ON LEADERBOARD! 🥉';
+            else if (rank <= 10) rankMessage = `🌟 TOP 10! Rank #${rank} 🌟`;
+            else rankMessage = 'Keep trying to reach the top 10!';
+
+            document.getElementById('leaderboardResult').textContent = rankMessage;
+
+            updateLeaderboardDisplay();
+
+            const statsText = `😎 Vibes: ${collectionStats.vibes} | 👻 Rekt: ${collectionStats.rekt} | 🐧 Penguin: ${collectionStats.penguin}`;
+
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('finalCoins').textContent = coinsCollected;
+            document.getElementById('gameStats').textContent = statsText;
+            document.getElementById('gameOver').classList.add('show');
+        }
+
+        function updateLeaderboardDisplay() {
+            const leaderboardList = document.getElementById('leaderboardList');
+            leaderboardList.innerHTML = '';
+
+            leaderboard.forEach((entry, index) => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'leaderboard-entry';
+
+                if (index === 0) entryDiv.classList.add('gold');
+                else if (index === 1) entryDiv.classList.add('silver');
+                else if (index === 2) entryDiv.classList.add('bronze');
+
+                let rankEmoji = '';
+                if (index === 0) rankEmoji = '🥇';
+                else if (index === 1) rankEmoji = '🥈';
+                else if (index === 2) rankEmoji = '🥉';
+                else rankEmoji = `#${index + 1}`;
+
+                entryDiv.innerHTML = `
+                    <span class="rank">${rankEmoji}</span>
+                    <span class="player-name">${entry.name}</span>
+                    <span class="player-score">💰 ${entry.score}</span>
+                    <span class="player-date">${entry.date}</span>
+                `;
+
+                leaderboardList.appendChild(entryDiv);
+            });
+
+            if (leaderboard.length === 0) {
+                leaderboardList.innerHTML = '<p style="text-align: center; padding: 20px;">No scores yet! Be the first!</p>';
+            }
+        }
+
+        function togglePause() {
+            if (!gameActive) return;
+            isPaused = !isPaused;
+        }
+
+        function resetHighScore() {
+            highScore = 0;
+            localStorage.setItem('ultimateMemeHighScore', 0);
+            document.getElementById('highScore').textContent = 0;
+        }
+
+        function clearLeaderboard() {
+            if (confirm('Are you sure you want to clear all leaderboard scores?')) {
+                leaderboard = [];
+                localStorage.setItem('memeLeaderboard', JSON.stringify(leaderboard));
+                updateLeaderboardDisplay();
+            }
+        }
+
+        // CSS for shake animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-10px); }
+                75% { transform: translateX(10px); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize on load
+        window.onload = () => {
+            document.getElementById('highScore').textContent = highScore;
+            updateLeaderboardDisplay();
+        };
+    </script>
+</body>
+</html>
