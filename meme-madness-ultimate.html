@@ -769,11 +769,15 @@
                 }
 
                 this.clicked = false;
-                this.speed = 2 + Math.random() * 4;
+                this.speed = 2 + Math.random() * 3;
                 this.angle = Math.random() * Math.PI * 2;
                 this.time = 0;
                 this.centerX = canvasRect.width / 2;
                 this.centerY = canvas.offsetHeight / 2;
+                // Pick one movement pattern and stick with it
+                this.movePattern = Math.floor(Math.random() * 5);
+                this.dx = Math.cos(this.angle) * this.speed;
+                this.dy = Math.sin(this.angle) * this.speed;
             }
 
             spawn() {
@@ -800,72 +804,51 @@
             move() {
                 if (!gameActive || isPaused || this.clicked) return;
 
-                this.time += 0.05;
+                this.time += 0.03;
                 const canvas = document.getElementById('gameCanvas');
 
-                // More diverse movement patterns
-                const pattern = Math.floor(Math.random() * 8);
-
-                switch(pattern) {
-                    case 0: // Circular with varying radius
-                        const radius = 100 + Math.sin(this.time * 0.5) * 50;
-                        this.x = this.centerX + Math.cos(this.time * this.speed) * radius;
-                        this.y = this.centerY + Math.sin(this.time * this.speed) * radius;
+                // Use the pattern assigned at creation
+                switch(this.movePattern) {
+                    case 0: // Smooth circular
+                        this.x = this.centerX + Math.cos(this.time * this.speed * 0.5) * 120;
+                        this.y = this.centerY + Math.sin(this.time * this.speed * 0.5) * 120;
                         break;
-                    case 1: // Diagonal bounce
-                        this.x += Math.cos(this.angle) * this.speed * 1.5;
-                        this.y += Math.sin(this.angle) * this.speed * 1.5;
+                    case 1: // Bouncing
+                        this.x += this.dx;
+                        this.y += this.dy;
 
                         if (this.x <= 0 || this.x >= canvas.offsetWidth - 80) {
-                            this.angle = Math.PI - this.angle + (Math.random() - 0.5) * 0.5;
+                            this.dx = -this.dx;
                             this.x = Math.max(0, Math.min(canvas.offsetWidth - 80, this.x));
                         }
                         if (this.y <= 0 || this.y >= canvas.offsetHeight - 80) {
-                            this.angle = -this.angle + (Math.random() - 0.5) * 0.5;
+                            this.dy = -this.dy;
                             this.y = Math.max(0, Math.min(canvas.offsetHeight - 80, this.y));
                         }
                         break;
-                    case 2: // Spiral outward
-                        const spiralRadius = this.time * 10;
-                        this.x = this.centerX + Math.cos(this.time * this.speed * 2) * spiralRadius;
-                        this.y = this.centerY + Math.sin(this.time * this.speed * 2) * spiralRadius;
-                        if (spiralRadius > 200) {
-                            this.time = 0;
-                            this.centerX = Math.random() * canvas.offsetWidth;
-                            this.centerY = Math.random() * canvas.offsetHeight;
-                        }
+                    case 2: // Figure 8
+                        this.x = this.centerX + Math.sin(this.time * this.speed * 0.4) * 140;
+                        this.y = this.centerY + Math.sin(this.time * this.speed * 0.8) * 70;
                         break;
-                    case 3: // Figure 8 horizontal
-                        this.x = this.centerX + Math.sin(this.time * this.speed) * 150;
-                        this.y = this.centerY + Math.sin(this.time * this.speed * 2) * 80;
-                        break;
-                    case 4: // Wave motion
-                        this.x += this.speed * 1.2;
-                        this.y = this.centerY + Math.sin(this.time * 3) * 100;
+                    case 3: // Wave motion
+                        this.x += this.speed * 0.8;
+                        this.y = this.centerY + Math.sin(this.time * 2) * 80;
                         if (this.x > canvas.offsetWidth) {
                             this.x = -70;
-                            this.centerY = Math.random() * canvas.offsetHeight;
+                            this.centerY = Math.random() * canvas.offsetHeight * 0.8 + canvas.offsetHeight * 0.1;
                         }
                         break;
-                    case 5: // Random teleport
+                    case 4: // Floating drift
+                        this.x += Math.sin(this.time) * this.speed * 0.8;
+                        this.y += Math.cos(this.time * 0.7) * this.speed * 0.5;
+
+                        // Gentle random drift
                         if (Math.random() < 0.02) {
-                            this.x = Math.random() * (canvas.offsetWidth - 80);
-                            this.y = Math.random() * (canvas.offsetHeight - 80);
-                        } else {
-                            this.x += (Math.random() - 0.5) * this.speed * 3;
-                            this.y += (Math.random() - 0.5) * this.speed * 3;
+                            this.dx = (Math.random() - 0.5) * this.speed;
+                            this.dy = (Math.random() - 0.5) * this.speed;
                         }
-                        break;
-                    case 6: // Lissajous curve
-                        this.x = this.centerX + Math.sin(this.time * this.speed * 3) * 120;
-                        this.y = this.centerY + Math.sin(this.time * this.speed * 2) * 120;
-                        break;
-                    case 7: // Erratic zigzag
-                        this.x += Math.sin(this.time * 4) * this.speed * 3;
-                        this.y += Math.cos(this.time * 3) * this.speed * 2;
-                        if (Math.random() < 0.1) {
-                            this.angle = Math.random() * Math.PI * 2;
-                        }
+                        this.x += this.dx * 0.3;
+                        this.y += this.dy * 0.3;
                         break;
                 }
 
