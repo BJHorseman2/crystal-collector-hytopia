@@ -274,14 +274,52 @@
         }
 
         .meme-character.rug {
-            background: linear-gradient(135deg, #8B4513 0%, #D2691E 50%, #8B4513 100%);
-            border: 3px solid #ff0000;
-            animation: rugPulse 1s ease-in-out infinite;
+            width: clamp(80px, 12vw, 100px) !important;
+            height: clamp(50px, 8vw, 60px) !important;
+            border-radius: 8px !important;
+            background: repeating-linear-gradient(
+                45deg,
+                #8B4513,
+                #8B4513 10px,
+                #D2691E 10px,
+                #D2691E 20px,
+                #A0522D 20px,
+                #A0522D 30px
+            );
+            border: 4px solid #4B0000;
+            box-shadow:
+                0 6px 12px rgba(0,0,0,0.5),
+                inset 0 0 20px rgba(0,0,0,0.3);
+            animation: rugFloat 2s ease-in-out infinite;
+            position: relative;
         }
 
-        @keyframes rugPulse {
-            0%, 100% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.1) rotate(5deg); }
+        .meme-character.rug::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: repeating-linear-gradient(
+                90deg,
+                #FFD700 0px,
+                #FFD700 2px,
+                transparent 2px,
+                transparent 4px
+            );
+            border-radius: 8px;
+            opacity: 0.3;
+            z-index: -1;
+        }
+
+        @keyframes rugFloat {
+            0%, 100% {
+                transform: perspective(100px) rotateX(5deg) scale(1);
+            }
+            50% {
+                transform: perspective(100px) rotateX(5deg) scale(1.05) translateY(-5px);
+            }
         }
 
         .meme-character.moon {
