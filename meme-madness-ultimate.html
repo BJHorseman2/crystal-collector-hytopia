@@ -327,6 +327,36 @@
             font-size: clamp(35px, 7vw, 50px);
         }
 
+        .meme-character.whale {
+            width: clamp(100px, 15vw, 120px) !important;
+            height: clamp(100px, 15vw, 120px) !important;
+            background: linear-gradient(135deg, #4169E1, #1E90FF, #00BFFF);
+            font-size: clamp(60px, 10vw, 80px);
+            border: 5px solid #FFD700;
+            box-shadow:
+                0 0 30px #FFD700,
+                0 0 60px #FFD700,
+                inset 0 0 30px rgba(255, 215, 0, 0.3);
+            animation: whaleGlow 0.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes whaleGlow {
+            from {
+                transform: scale(1) rotate(-5deg);
+                box-shadow:
+                    0 0 30px #FFD700,
+                    0 0 60px #FFD700,
+                    inset 0 0 30px rgba(255, 215, 0, 0.3);
+            }
+            to {
+                transform: scale(1.1) rotate(5deg);
+                box-shadow:
+                    0 0 50px #FFD700,
+                    0 0 100px #FFD700,
+                    inset 0 0 50px rgba(255, 215, 0, 0.5);
+            }
+        }
+
         .meme-character:hover {
             transform: scale(1.2) rotate(10deg);
             z-index: 100;
@@ -625,6 +655,44 @@
                 transform: scale(0.9);
             }
         }
+
+        @keyframes whaleAlert {
+            0% { transform: translateX(-50%) scale(0.5); opacity: 0; }
+            50% { transform: translateX(-50%) scale(1.2); opacity: 1; }
+            100% { transform: translateX(-50%) scale(1); opacity: 0; }
+        }
+
+        @keyframes speedAlert {
+            0% { transform: translateX(-50%) translateY(20px); opacity: 0; }
+            50% { transform: translateX(-50%) translateY(0); opacity: 1; }
+            100% { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+        }
+
+        @keyframes flashFade {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        #speedIndicator {
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #FF4500;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            z-index: 100;
+            background: rgba(255,255,255,0.9);
+            padding: 5px 10px;
+            border-radius: 10px;
+            border: 2px solid #FF4500;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
     </style>
 </head>
 <body>
@@ -648,6 +716,7 @@
             <div class="stat">⚡ <span id="combo">0</span></div>
             <div class="stat">🏆 <span id="highScore">0</span></div>
         </div>
+        <div id="speedIndicator">🚀 Speed: 1x</div>
 
         <div id="comboBarContainer">
             <div id="comboBar"></div>
@@ -690,7 +759,11 @@
         let gameTimer;
         let spawnInterval;
         let highScore = localStorage.getItem('ultimateHighScore') || 0;
-        let collectionStats = { vibes: 0, rekt: 0, penguin: 0, nft: 0, moon: 0 };
+        let speedLevel = 1;
+        let gameStartTime = 0;
+        let lastSpeedIncrease = 0;
+        let spawnRate = 2000;
+        let collectionStats = { vibes: 0, rekt: 0, penguin: 0, nft: 0, moon: 0, whales: 0 };
 
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -703,13 +776,14 @@
         const movementPatterns = ['bounce-move', 'spiral-move', 'zigzag-move', 'orbit-move', 'teleport-move'];
 
         const characterTypes = [
-            { name: 'VIBES', value: 25, className: 'vibes', rarity: 0.25, emoji: '😎' },
+            { name: 'VIBES', value: 25, className: 'vibes', rarity: 0.24, emoji: '😎' },
             { name: 'REKT', value: -15, className: 'rekt', rarity: 0.2, emoji: '👻' },
             { name: 'PENGUIN', value: 50, className: 'penguin', rarity: 0.2, emoji: '🐧' },
             { name: 'NFT', value: 75, className: 'nft', rarity: 0.15, emoji: '🎨' },
             { name: 'RUG', value: -50, className: 'rug', rarity: 0.06, emoji: '🧹', isRug: true },
             { name: 'MOON', value: 100, className: 'moon', rarity: 0.07, emoji: '🌙', special: true },
-            { name: 'CHAOS', value: 200, className: 'chaos', rarity: 0.07, emoji: '🌈', special: true }
+            { name: 'CHAOS', value: 200, className: 'chaos', rarity: 0.07, emoji: '🌈', special: true },
+            { name: 'WHALE', value: 500, className: 'whale', rarity: 0.01, emoji: '🐋', isWhale: true }
         ];
 
         // Touch handling for mobile
@@ -769,15 +843,25 @@
                 }
 
                 this.clicked = false;
-                this.speed = 2 + Math.random() * 3;
+                // Speed increases with game difficulty
+                const baseSpeed = this.type.isWhale ? 8 : (2 + Math.random() * 3);
+                this.speed = baseSpeed * (1 + (speedLevel - 1) * 0.3);
                 this.angle = Math.random() * Math.PI * 2;
                 this.time = 0;
                 this.centerX = canvasRect.width / 2;
                 this.centerY = canvas.offsetHeight / 2;
                 // Pick one movement pattern and stick with it
-                this.movePattern = Math.floor(Math.random() * 5);
+                this.movePattern = this.type.isWhale ? 1 : Math.floor(Math.random() * 5);
                 this.dx = Math.cos(this.angle) * this.speed;
                 this.dy = Math.sin(this.angle) * this.speed;
+
+                // Whales disappear quickly
+                if (this.type.isWhale) {
+                    this.lifetime = 3000; // 3 seconds only
+                    setTimeout(() => {
+                        if (!this.clicked) this.remove();
+                    }, this.lifetime);
+                }
             }
 
             spawn() {
@@ -785,7 +869,7 @@
                 this.element.style.left = this.x + 'px';
                 this.element.style.top = this.y + 'px';
 
-                if (this.type.className === 'moon' || this.type.className === 'chaos' || this.type.className === 'rug') {
+                if (this.type.className === 'moon' || this.type.className === 'chaos' || this.type.className === 'rug' || this.type.className === 'whale') {
                     this.element.textContent = this.type.emoji;
                 }
 
@@ -890,6 +974,10 @@
                     collectionStats.rugged = (collectionStats.rugged || 0) + 1;
                     combo = 0;
                     showRuggedMessage();
+                } else if (this.type.isWhale) {
+                    // Handle whale catch
+                    collectionStats.whales++;
+                    showWhaleAlert();
                 } else if (value > 0) {
                     if (this.type.name === 'VIBES') collectionStats.vibes++;
                     else if (this.type.name === 'PENGUIN') collectionStats.penguin++;
@@ -899,6 +987,9 @@
                         activateMoonMode();
                     } else if (this.type.name === 'CHAOS') {
                         activateChaosMode();
+                    } else if (this.type.name === 'WHALE') {
+                        collectionStats.whales++;
+                        showWhaleAlert();
                     }
 
                     // Screen shake for big catches
@@ -1202,6 +1293,73 @@
             }, 5000);
         }
 
+        function showWhaleAlert() {
+            const alert = document.createElement('div');
+            alert.style.cssText = `
+                position: fixed;
+                top: 20%;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: clamp(3em, 8vw, 5em);
+                font-weight: bold;
+                color: #4169E1;
+                text-shadow: 0 0 20px rgba(65,105,225,0.8);
+                z-index: 10000;
+                animation: whaleAlert 1.5s ease-out;
+                pointer-events: none;
+            `;
+            alert.textContent = '🐋 WHALE CAUGHT! +500';
+            document.body.appendChild(alert);
+
+            setTimeout(() => alert.remove(), 1500);
+
+            // Extra celebration for whale
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const x = Math.random() * window.innerWidth;
+                    const y = Math.random() * window.innerHeight;
+                    createSuperExplosion(x, y, '💎', 150);
+                }, i * 50);
+            }
+        }
+
+        function showSpeedIncrease() {
+            const alert = document.createElement('div');
+            alert.style.cssText = `
+                position: fixed;
+                top: 30%;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: clamp(2em, 6vw, 3em);
+                font-weight: bold;
+                color: #FF4500;
+                text-shadow: 0 0 10px rgba(255,69,0,0.8);
+                z-index: 10000;
+                animation: speedAlert 1s ease-out;
+                pointer-events: none;
+            `;
+            alert.textContent = `⚡ SPEED LEVEL ${speedLevel}! ⚡`;
+            document.body.appendChild(alert);
+
+            setTimeout(() => alert.remove(), 1000);
+
+            // Flash the screen
+            const flash = document.createElement('div');
+            flash.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(255,69,0,0.3);
+                z-index: 9999;
+                pointer-events: none;
+                animation: flashFade 0.5s ease-out;
+            `;
+            document.body.appendChild(flash);
+            setTimeout(() => flash.remove(), 500);
+        }
+
         function activateChaosMode() {
             if (chaosMode || !gameActive) return;
 
@@ -1255,12 +1413,16 @@
             score = 0;
             timeLeft = 60;
             combo = 0;
+            speedLevel = 1;
+            gameStartTime = Date.now();
+            lastSpeedIncrease = Date.now();
+            spawnRate = 800;
             maxCombo = 0;
             lastCollectTime = 0;
             isPaused = false;
             moonMode = false;
             chaosMode = false;
-            collectionStats = { vibes: 0, rekt: 0, penguin: 0, nft: 0, moon: 0 };
+            collectionStats = { vibes: 0, rekt: 0, penguin: 0, nft: 0, moon: 0, whales: 0 };
 
             canvas.querySelectorAll('.meme-character, .points-popup, .explosion-particle, .super-explosion').forEach(c => c.remove());
 
@@ -1276,7 +1438,37 @@
 
             setTimeout(() => {
                 if (gameActive) {
-                    spawnInterval = setInterval(spawnCharacter, 800);
+                    spawnInterval = setInterval(spawnCharacter, spawnRate);
+
+                    // Speed escalation every 20 seconds
+                    const speedIncreaseInterval = setInterval(() => {
+                        if (!gameActive || isPaused) return;
+
+                        const currentTime = Date.now();
+                        if (currentTime - lastSpeedIncrease >= 20000) {
+                            speedLevel++;
+                            lastSpeedIncrease = currentTime;
+                            spawnRate = Math.max(200, 800 - (speedLevel - 1) * 100);
+
+                            // Restart spawn interval with new rate
+                            clearInterval(spawnInterval);
+                            spawnInterval = setInterval(spawnCharacter, spawnRate);
+
+                            showSpeedIncrease();
+
+                            // Update speed indicator
+                            const speedIndicator = document.getElementById('speedIndicator');
+                            if (speedIndicator) {
+                                speedIndicator.textContent = `🚀 Speed: ${speedLevel}x`;
+                                speedIndicator.style.animation = 'none';
+                                setTimeout(() => {
+                                    speedIndicator.style.animation = 'pulse 2s infinite';
+                                }, 10);
+                            }
+                        }
+
+                        if (!gameActive) clearInterval(speedIncreaseInterval);
+                    }, 1000);
 
                     gameTimer = setInterval(() => {
                         if (!isPaused && gameActive) {
