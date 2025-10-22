@@ -20,10 +20,21 @@
             <!-- Game grid will be generated here -->
         </div>
 
+        <!-- Mobile Touch Controls -->
+        <div class="mobile-controls" id="mobileControls">
+            <div class="dpad">
+                <button class="dpad-btn dpad-up" data-direction="up">▲</button>
+                <button class="dpad-btn dpad-left" data-direction="left">◀</button>
+                <button class="dpad-btn dpad-right" data-direction="right">▶</button>
+                <button class="dpad-btn dpad-down" data-direction="down">▼</button>
+            </div>
+        </div>
+
         <div class="controls">
             <div class="control-info">
                 <p><strong>Controls:</strong></p>
-                <p>Arrow Keys or WASD to move</p>
+                <p class="desktop-control">Arrow Keys or WASD to move</p>
+                <p class="mobile-control">Swipe or use D-pad to move</p>
                 <p>🔷 Diamond = 10 points</p>
                 <p>🟡 Gold = 50 points</p>
             </div>

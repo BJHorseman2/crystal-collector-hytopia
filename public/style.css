@@ -153,7 +153,84 @@ h1 {
     font-size: 1.2em;
 }
 
+/* Mobile Touch Controls */
+.mobile-controls {
+    display: none;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.dpad {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    display: grid;
+    grid-template-areas:
+        ". up ."
+        "left . right"
+        ". down .";
+    grid-template-columns: 60px 60px 60px;
+    grid-template-rows: 60px 60px 60px;
+    gap: 5px;
+}
+
+.dpad-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 2em;
+    cursor: pointer;
+    transition: all 0.1s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.dpad-btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+.dpad-up {
+    grid-area: up;
+}
+
+.dpad-left {
+    grid-area: left;
+}
+
+.dpad-right {
+    grid-area: right;
+}
+
+.dpad-down {
+    grid-area: down;
+}
+
+/* Hide/Show controls based on device */
+.desktop-control {
+    display: block;
+}
+
+.mobile-control {
+    display: none;
+}
+
 @media (max-width: 600px) {
+    .mobile-controls {
+        display: flex;
+    }
+
+    .desktop-control {
+        display: none;
+    }
+
+    .mobile-control {
+        display: block;
+    }
     h1 {
         font-size: 1.8em;
     }

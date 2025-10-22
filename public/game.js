@@ -196,6 +196,60 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
+// Mobile touch controls - D-pad buttons
+document.querySelectorAll('.dpad-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const direction = btn.dataset.direction;
+        switch(direction) {
+            case 'up': movePlayer(0, -1); break;
+            case 'down': movePlayer(0, 1); break;
+            case 'left': movePlayer(-1, 0); break;
+            case 'right': movePlayer(1, 0); break;
+        }
+    });
+});
+
+// Swipe gesture detection
+let touchStartX = 0;
+let touchStartY = 0;
+const SWIPE_THRESHOLD = 30;
+
+const gameArea = document.getElementById('gameArea');
+
+gameArea.addEventListener('touchstart', (e) => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+}, { passive: true });
+
+gameArea.addEventListener('touchend', (e) => {
+    if (!touchStartX || !touchStartY) return;
+
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+
+    const deltaX = touchEndX - touchStartX;
+    const deltaY = touchEndY - touchStartY;
+
+    // Determine swipe direction
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        // Horizontal swipe
+        if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
+            if (deltaX > 0) movePlayer(1, 0);  // Right
+            else movePlayer(-1, 0);            // Left
+        }
+    } else {
+        // Vertical swipe
+        if (Math.abs(deltaY) > SWIPE_THRESHOLD) {
+            if (deltaY > 0) movePlayer(0, 1);  // Down
+            else movePlayer(0, -1);            // Up
+        }
+    }
+
+    touchStartX = 0;
+    touchStartY = 0;
+}, { passive: true });
+
 // Restart button
 document.getElementById('restartBtn').addEventListener('click', initGame);
 
