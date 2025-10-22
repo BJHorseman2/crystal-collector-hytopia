@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crystal Collector Arena</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1>Crystal Collector Arena</h1>
+            <div class="stats">
+                <div class="score">Score: <span id="score">0</span></div>
+                <div class="time">Time: <span id="time">0</span>s</div>
+            </div>
+        </div>
+
+        <div class="game-area" id="gameArea">
+            <!-- Game grid will be generated here -->
+        </div>
+
+        <div class="controls">
+            <div class="control-info">
+                <p><strong>Controls:</strong></p>
+                <p>Arrow Keys or WASD to move</p>
+                <p>🔷 Diamond = 10 points</p>
+                <p>🟡 Gold = 50 points</p>
+            </div>
+            <button id="restartBtn" class="restart-btn">Restart Game</button>
+        </div>
+
+        <div class="leaderboard">
+            <h3>High Score: <span id="highScore">0</span></h3>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

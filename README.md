@@ -1,61 +1,98 @@
-# Crystal Collector Arena - Hytopia Game
+# Crystal Collector Arena
 
-A competitive multiplayer crystal collecting game for the Hytopia platform!
+A fun, browser-based crystal collecting game built with vanilla HTML, CSS, and JavaScript.
 
-## Game Features
-- Collect diamond crystals (10 points) and gold crystals (50 points)
-- First player to 500 points wins
-- Crystals respawn after collection
-- Real-time leaderboard
-- Multiplayer support up to 16 players
+## About
 
-## Local Testing
+Crystal Collector Arena is a simple grid-based game where you control a player moving around an 11x11 arena collecting crystals for points. The game features diamond and gold crystals with different point values, and tracks your high score locally.
 
-### 1. Start the server:
-```bash
-npm start
-```
+## Features
 
-### 2. Connect to the game:
-The server runs on port 8080. You can connect via:
-- http://localhost:8080
-- Or use Hytopia's web client when available
+- 🎮 **Simple Controls**: Use arrow keys or WASD to move around
+- 🔷 **Diamond Crystals**: Worth 10 points each
+- 🟡 **Gold Crystals**: Worth 50 points each (20% spawn rate)
+- ⏱️ **Time Tracking**: See how long you've been playing
+- 🏆 **High Score**: Tracks your best score using localStorage
+- ✨ **Responsive Design**: Works on desktop and mobile devices
+- 🔄 **Auto-Respawn**: Crystals respawn 3 seconds after collection
 
-## Commands
-- `/score` - Check your current score
-- `/help` - Show help information
+## How to Play
 
-## Deployment to Hytopia Platform
+1. Start the server:
+   ```bash
+   npm start
+   ```
 
-### 1. Create a Hytopia account at https://create.hytopia.com
+2. Open your browser and navigate to:
+   ```
+   http://localhost:8080
+   ```
 
-### 2. Get your credentials:
-- HYTOPIA_API_KEY
-- HYTOPIA_GAME_ID
-- HYTOPIA_LOBBY_ID
-
-### 3. Set environment variables:
-```bash
-export HYTOPIA_API_KEY="your-api-key"
-export HYTOPIA_GAME_ID="your-game-id"
-export HYTOPIA_LOBBY_ID="your-lobby-id"
-```
-
-### 4. Deploy using Hytopia CLI:
-```bash
-npx hytopia deploy
-```
+3. Use the arrow keys or WASD to move your player (🎮)
+4. Collect diamonds (🔷) and gold (🟡) to earn points
+5. Try to beat your high score!
 
 ## Project Structure
-- `index.js` - Main server code with game logic
-- `hytopia.json` - Game configuration
-- `package.json` - Project dependencies
 
-## Game Mechanics
-- Players spawn in the arena
-- Break crystal blocks to collect them
-- Crystals respawn 3 seconds after collection
-- Game resets 5 seconds after someone wins
+```
+crystal-collector-hytopia/
+├── public/
+│   ├── index.html    # Main game page
+│   ├── style.css     # Game styling
+│   └── game.js       # Game logic
+├── server.js         # Simple HTTP server
+├── package.json      # Project configuration
+└── README.md         # This file
+```
 
 ## Development
-Built with Hytopia SDK v0.10.16
+
+The game uses no external dependencies beyond Node.js built-in modules for the server.
+
+### Available Scripts
+
+- `npm start` - Start the production server
+- `npm run dev` - Start the server with auto-reload on changes
+
+## Game Mechanics
+
+- **Grid Size**: 11x11 cells
+- **Initial Crystals**: 10-15 crystals spawn at game start
+- **Respawn Time**: 3 seconds after collection
+- **Gold Chance**: 20% chance when spawning new crystals
+- **Scoring**:
+  - Diamond: 10 points
+  - Gold: 50 points
+
+## Browser Compatibility
+
+Works on all modern browsers that support:
+- ES6 JavaScript
+- CSS Grid
+- LocalStorage API
+
+## Technical Details
+
+- Pure vanilla JavaScript (no frameworks)
+- CSS Grid for responsive layout
+- LocalStorage for persistent high scores
+- Simple Node.js HTTP server
+- No build process required
+
+## Future Enhancements
+
+Potential features to add:
+- Multiple difficulty levels
+- Power-ups and obstacles
+- Multiplayer support
+- Sound effects and music
+- Leaderboard with multiple scores
+- Mobile touch controls
+
+## License
+
+ISC
+
+---
+
+Enjoy playing Crystal Collector Arena! 🎮✨
